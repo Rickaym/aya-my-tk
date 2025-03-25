@@ -3,7 +3,7 @@ FROM python:3.11-slim-bullseye AS base
 
 # Install system dependencies including Tesseract and Burmese language support
 RUN apt-get update \
-    && apt-get install -y tesseract-ocr tesseract-ocr-mya tesseract-ocr-eng
+    && apt-get install -y tesseract-ocr tesseract-ocr-mya tesseract-ocr-eng python3-opencv
 
 # Set working directory
 WORKDIR /app
