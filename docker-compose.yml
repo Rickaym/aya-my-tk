@@ -1,0 +1,13 @@
+services:
+  burmese-ocr:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+volumes:
+  data:
