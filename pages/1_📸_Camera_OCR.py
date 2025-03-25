@@ -29,18 +29,9 @@ if "processing_status" not in st.session_state:
     st.session_state.processing_status = {}
 if "uploaded_files" not in st.session_state:
     st.session_state.uploaded_files = []
-if "ocr_language" not in st.session_state:
-    st.session_state.ocr_language = "mya"
 
 # Language selection
 st.sidebar.header("OCR Configuration")
-ocr_language = st.sidebar.selectbox(
-    "Select OCR Language",
-    ["mya", "mya+eng"],
-    index=0 if st.session_state.ocr_language == "mya" else 1,
-    help="Select 'mya' for Burmese only or 'mya+eng' for Burmese and English",
-)
-st.session_state.ocr_language = ocr_language
 
 
 def process_image(image):
@@ -49,7 +40,7 @@ def process_image(image):
     pil_image = Image.fromarray(image)
     config_str = "--dpi 100"
     text = pytesseract.image_to_string(
-        pil_image, lang=st.session_state.ocr_language, config=config_str
+        pil_image, lang="myan", config=config_str
     )
     return text
 
@@ -67,7 +58,7 @@ def save_results(image, text, metadata):
     metadata_path = os.path.join("data", f"{filename}.json")
     metadata["image_path"] = image_path
     metadata["text"] = text
-    metadata["language"] = st.session_state.ocr_language
+    metadata["language"] = "myan"
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, ensure_ascii=False, indent=2)
 
@@ -95,7 +86,7 @@ def save_for_later(file):
         "original_filename": file.name,
         "file_path": file_path,
         "status": "pending",
-        "language": st.session_state.ocr_language,
+        "language": "myan",
     }
 
     metadata_path = os.path.join(pending_dir, f"{filename}_metadata.json")
@@ -117,7 +108,7 @@ def process_single_file(file) -> Tuple[str, Any, Dict]:
     # Create metadata
     metadata = {
         "timestamp": datetime.now().isoformat(),
-        "language": st.session_state.ocr_language,
+        "language": "myan",
         "original_text": text,
         "edited_text": text,
         "source": "upload",
@@ -284,7 +275,7 @@ if st.session_state.captured_image is not None:
     if st.button("Save Results"):
         metadata = {
             "timestamp": datetime.now().isoformat(),
-            "language": st.session_state.ocr_language,
+            "language": "myan",
             "original_text": st.session_state.ocr_text,
             "edited_text": st.session_state.edited_text,
             "source": st.session_state.get("source", "camera"),
