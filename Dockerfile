@@ -1,5 +1,5 @@
 # Use Python 3.11 slim image
-FROM python:3.11-slim AS base
+FROM python:3.11-slim-bullseye AS base
 
 # Install system dependencies including Tesseract and Burmese language support
 RUN apt-get update \
@@ -10,19 +10,17 @@ WORKDIR /app
 
 # Install UV
 RUN pip install --no-cache-dir uv
-RUN uv sync --no-dev
 
 # Copy the rest of the application
 COPY . .
+
+RUN uv sync --no-dev
 
 # Create necessary directories
 RUN mkdir -p data/pending
 
 # Expose the port Streamlit runs on
 EXPOSE 8501
-
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
 
 # Run the application
 CMD ["uv", "run", "streamlit", "run", "Home.py"]
