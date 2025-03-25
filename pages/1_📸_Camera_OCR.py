@@ -38,7 +38,7 @@ ocr_language = st.sidebar.selectbox(
     "Select OCR Language",
     ["mya", "mya+eng"],
     index=0 if st.session_state.ocr_language == "mya" else 1,
-    help="Select 'mya' for Burmese only or 'mya+eng' for Burmese and English"
+    help="Select 'mya' for Burmese only or 'mya+eng' for Burmese and English",
 )
 st.session_state.ocr_language = ocr_language
 
@@ -47,8 +47,10 @@ def process_image(image):
     """Process image for OCR"""
     # Convert to PIL Image
     pil_image = Image.fromarray(image)
-    # Perform OCR
-    text = pytesseract.image_to_string(pil_image, lang=st.session_state.ocr_language)
+    config_str = "--dpi 100"
+    text = pytesseract.image_to_string(
+        pil_image, lang=st.session_state.ocr_language, config=config_str
+    )
     return text
 
 
@@ -93,7 +95,7 @@ def save_for_later(file):
         "original_filename": file.name,
         "file_path": file_path,
         "status": "pending",
-        "language": st.session_state.ocr_language
+        "language": st.session_state.ocr_language,
     }
 
     metadata_path = os.path.join(pending_dir, f"{filename}_metadata.json")
@@ -179,12 +181,16 @@ with tab2:
                 status_text = st.empty()
 
                 # Process files in parallel
-                with ThreadPoolExecutor(max_workers=min(4, len(uploaded_files))) as executor:
+                with ThreadPoolExecutor(
+                    max_workers=min(4, len(uploaded_files))
+                ) as executor:
                     futures = []
                     for file in uploaded_files:
                         if file.name not in st.session_state.processing_status:
                             st.session_state.processing_status[file.name] = "pending"
-                            futures.append((executor.submit(process_single_file, file), file))
+                            futures.append(
+                                (executor.submit(process_single_file, file), file)
+                            )
 
                     # Update progress as files are processed
                     completed = 0
@@ -207,7 +213,9 @@ with tab2:
                                     "metadata": metadata,
                                 }
                             )
-                            st.session_state.processing_status[metadata["filename"]] = "completed"
+                            st.session_state.processing_status[metadata["filename"]] = (
+                                "completed"
+                            )
                         except Exception as e:
                             st.error(f"Error processing {file.name}: {str(e)}")
                             st.session_state.processing_status[file.name] = "error"
