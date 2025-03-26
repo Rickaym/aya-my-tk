@@ -19,6 +19,9 @@ RUN uv sync --no-dev
 # Create necessary directories
 RUN mkdir -p data/pending
 
+# Set env variables
+ENV TESSDATA_PREFIX="traineddata"
+
 # Expose the port Streamlit runs on
 EXPOSE 8501
 
