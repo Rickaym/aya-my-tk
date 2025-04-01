@@ -1,15 +1,12 @@
 import streamlit as st
 import cv2
-import numpy as np
-import pytesseract
-from PIL import Image
 import json
-import os
-from datetime import datetime
 import tempfile
+import os
+from google.cloud import documentai
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Dict, Tuple, Any
-import shutil
+from typing import Dict, Tuple, Any
 
 # Page config
 st.set_page_config(page_title="Document OCR", page_icon="📸", layout="wide")
@@ -34,15 +31,72 @@ if "uploaded_files" not in st.session_state:
 st.sidebar.header("OCR Configuration")
 
 
-def process_image(image):
-    """Process image for OCR"""
-    # Convert to PIL Image
-    pil_image = Image.fromarray(image)
-    config_str = "--dpi 100"
-    text = pytesseract.image_to_string(
-        pil_image, lang="myan", config=config_str
+# Initialize Document AI client
+@st.cache_resource
+def get_document_ai_client():
+    try:
+        return documentai.DocumentProcessorServiceClient(
+            client_options={"api_endpoint": "us-documentai.googleapis.com"},
+        )
+    except Exception as e:
+        st.error(f"Failed to initialize Document AI client: {e}")
+        return None
+
+
+# Process document with Document AI
+def process_document(uploaded_file):
+    client = get_document_ai_client()
+    if not client:
+        st.error("Failed to initialize Document AI client")
+        return ""
+
+    print(f"Processing document {uploaded_file.name}")
+    project_id = os.environ.get("PROJECT_ID") or st.sidebar.text_input("Project ID")
+    location = os.environ.get("LOCATION") or st.sidebar.text_input("Location", "us")
+    processor_id = os.environ.get("PROCESSOR_ID") or st.sidebar.text_input(
+        "Processor ID"
     )
-    return text
+
+    # Check if configuration is complete
+    is_configured = all([project_id, location, processor_id])
+
+    if not is_configured:
+        st.warning("Please provide all required Document AI settings in the sidebar.")
+
+    # Create necessary directories
+    if not os.path.exists("data/pdf"):
+        os.makedirs("data/pdf")
+
+    # Get file extension
+    file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+
+    # Save the uploaded file to a temporary location
+    with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp:
+        temp.write(uploaded_file.getvalue())
+        file_path = temp.name
+
+    processor_name = client.processor_path(project_id, location, processor_id)
+    # Read the file
+    with open(file_path, "rb") as file:
+        content = file.read()
+
+    # Determine mime type based on file extension
+    file_extension = os.path.splitext(file_path)[1].lower()
+    mime_type = {
+        ".pdf": "application/pdf",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+    }.get(file_extension, "application/pdf")
+
+    # Configure the process request
+    document = documentai.RawDocument(content=content, mime_type=mime_type)
+
+    # Process the document
+    result = client.process_document(
+        request=documentai.ProcessRequest(raw_document=document, name=processor_name)
+    )
+    return result.document.text
 
 
 def save_results(image, text, metadata):
@@ -98,13 +152,8 @@ def save_for_later(file):
 
 def process_single_file(file) -> Tuple[str, Any, Dict]:
     """Process a single file and return its results"""
-    # Convert to OpenCV format
-    file_bytes = np.asarray(bytearray(file.read()), dtype=np.uint8)
-    image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-
-    # Process image
-    text = process_image(image)
-
+    print(f"Processed file {file.name}")
+    text = process_document(file)
     # Create metadata
     metadata = {
         "timestamp": datetime.now().isoformat(),
@@ -115,7 +164,7 @@ def process_single_file(file) -> Tuple[str, Any, Dict]:
         "filename": file.name,
     }
 
-    return text, image, metadata
+    return text, file, metadata
 
 
 # Create tabs for different input methods
@@ -126,19 +175,15 @@ with tab1:
     camera_image = st.camera_input("Capture document image")
 
     if camera_image:
-        # Convert to OpenCV format
-        file_bytes = np.asarray(bytearray(camera_image.read()), dtype=np.uint8)
-        image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-
         # Show preview
-        st.image(image, caption="Captured Image", use_container_width=True)
+        st.image(camera_image, caption="Captured Image", use_container_width=True)
 
         # Confirm button
         if st.button("Process Captured Image"):
             with st.spinner("Processing image..."):
                 # Perform OCR
-                text = process_image(image)
-                st.session_state.captured_image = image
+                text = process_document(camera_image)
+                st.session_state.captured_image = camera_image
                 st.session_state.ocr_text = text
                 st.session_state.edited_text = text
                 st.session_state.source = "camera"
@@ -178,6 +223,7 @@ with tab2:
                     futures = []
                     for file in uploaded_files:
                         if file.name not in st.session_state.processing_status:
+                            print(f"Queued file {file.name}")
                             st.session_state.processing_status[file.name] = "pending"
                             futures.append(
                                 (executor.submit(process_single_file, file), file)
