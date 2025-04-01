@@ -10,4 +10,9 @@ dependencies = [
     "streamlit",
     "opencv-python",
     "numpy",
+    "datasets>=2.13.2",
+    "googletrans>=3.0.0",
+    "google-cloud-documentai>=3.3.0",
+    "pdf2image>=1.17.0",
+    "python-dotenv>=0.21.1",
 ]
