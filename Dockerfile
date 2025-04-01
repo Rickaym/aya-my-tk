@@ -19,8 +19,10 @@ RUN uv sync --no-dev
 # Create necessary directories
 RUN mkdir -p data/pending
 
-# Set env variables
-ENV TESSDATA_PREFIX="traineddata"
+ENV GOOGLE_APPLICATION_CREDENTIALS="svc.json"
+ENV PROJECT_ID="celtic-buttress-455114-i2"
+ENV PROCESSOR_ID="ecad6ef69e43c791"
+ENV LOCATION="us"
 
 # Expose the port Streamlit runs on
 EXPOSE 8501
