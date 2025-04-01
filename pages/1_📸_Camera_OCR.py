@@ -154,6 +154,7 @@ def process_single_file(file) -> Tuple[str, Any, Dict]:
     """Process a single file and return its results"""
     print(f"Processed file {file.name}")
     text = process_document(file)
+    print(f"{file.name} produced text: {text}")
     # Create metadata
     metadata = {
         "timestamp": datetime.now().isoformat(),
