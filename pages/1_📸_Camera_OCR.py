@@ -1,14 +1,12 @@
 import streamlit as st
-import cv2
 import json
 import tempfile
 import os
 from google.cloud import documentai
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, Tuple, Any, List
+from typing import Dict, Tuple, Any
 from google.cloud.documentai_v1.types import document as gcd_document
-import base64
 
 # Page config
 st.set_page_config(page_title="Document OCR", page_icon="📸", layout="wide")
@@ -124,22 +122,25 @@ def get_blocks(document: gcd_document.Document):
             vertices = line.layout.bounding_poly.vertices
             if vertices:
                 # Calculate the top-left y-coordinate of the bounding box
-                top = min(vertex.y for vertex in vertices if hasattr(vertex, 'y'))
+                top = min(vertex.y for vertex in vertices if hasattr(vertex, "y"))
                 # Calculate the left x-coordinate of the bounding box
-                left = min(vertex.x for vertex in vertices if hasattr(vertex, 'x'))
+                left = min(vertex.x for vertex in vertices if hasattr(vertex, "x"))
 
                 # Get the text content
-                if hasattr(line.layout, 'text_anchor') and line.layout.text_anchor:
-                    text_segment = line.layout.text_anchor.text_segments[0] if line.layout.text_anchor.text_segments else None
+                if hasattr(line.layout, "text_anchor") and line.layout.text_anchor:
+                    text_segment = (
+                        line.layout.text_anchor.text_segments[0]
+                        if line.layout.text_anchor.text_segments
+                        else None
+                    )
                     if text_segment:
-                        text = document.text[text_segment.start_index:text_segment.end_index]
+                        text = document.text[
+                            text_segment.start_index : text_segment.end_index
+                        ]
                         # Store with position information for sorting
-                        text_blocks.append({
-                            'top': top,
-                            'left': left,
-                            'text': text,
-                            'type': 'line'
-                        })
+                        text_blocks.append(
+                            {"top": top, "left": left, "text": text, "type": "line"}
+                        )
 
         # Also include paragraph-level blocks for context
         # for paragraph in page.paragraphs:
@@ -160,30 +161,12 @@ def get_blocks(document: gcd_document.Document):
         #                 })
 
         # Sort blocks by position (top to bottom, left to right)
-        text_blocks.sort(key=lambda block: (block['top'], block['left']))
+        text_blocks.sort(key=lambda block: (block["top"], block["left"]))
 
         with open("text_blocks.json", "w", encoding="utf-8") as f:
             json.dump(text_blocks, f, indent=2, ensure_ascii=False)
 
     return text_blocks
-def save_results(image, text, metadata):
-    """Save results to local directory"""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"document_{timestamp}"
-
-    # Save image
-    image_path = os.path.join("data", f"{filename}.jpg")
-    cv2.imwrite(image_path, image)
-
-    # Save metadata
-    metadata_path = os.path.join("data", f"{filename}.json")
-    metadata["image_path"] = image_path
-    metadata["text"] = text
-    metadata["language"] = "myan"
-    with open(metadata_path, "w", encoding="utf-8") as f:
-        json.dump(metadata, f, ensure_ascii=False, indent=2)
-
-    return filename
 
 
 def save_for_later(file):
@@ -264,9 +247,9 @@ def create_image_overlay(image_bytes, text_blocks):
     # Add text blocks as overlays
     for block in text_blocks:
         # Get position information
-        top = block.get('top', 0) * 0.15 - 50
-        left = block.get('left', 0) * 0.15 - 30
-        text = block.get('text', '').replace('\n', '<br>')
+        top = block.get("top", 0) * 0.15 - 50
+        left = block.get("left", 0) * 0.15 - 30
+        text = block.get("text", "").replace("\n", "<br>")
 
         # Create overlay div with position matching the text block
         html += f"""
@@ -377,7 +360,7 @@ with tab1:
                     display_mode = st.radio(
                         "Display mode:",
                         ["Standard Image", "Text Overlay"],
-                        key=f"display_mode_{file_data['name']}"
+                        key=f"display_mode_{file_data['name']}",
                     )
                     d_image = st.empty()
 
@@ -398,7 +381,11 @@ with tab1:
                 with col2:
                     edited_text = st.text_area(
                         "Extracted Text",
-                        file_data["text"] if isinstance(file_data["text"], str) else file_data["text"][0],
+                        (
+                            file_data["text"]
+                            if isinstance(file_data["text"], str)
+                            else file_data["text"][0]
+                        ),
                         key=f"text_{file_data['name']}",
                         height=800,
                     )
@@ -454,21 +441,21 @@ if st.session_state.captured_image is not None:
         st.session_state.edited_text = st.session_state.text_editor
 
     # Save button
-    if st.button("Save Results"):
-        metadata = {
-            "timestamp": datetime.now().isoformat(),
-            "language": "myan",
-            "original_text": st.session_state.ocr_text,
-            "edited_text": st.session_state.edited_text,
-            "source": st.session_state.get("source", "camera"),
-        }
+    # if st.button("Save Results"):
+    #     metadata = {
+    #         "timestamp": datetime.now().isoformat(),
+    #         "language": "myan",
+    #         "original_text": st.session_state.ocr_text,
+    #         "edited_text": st.session_state.edited_text,
+    #         "source": st.session_state.get("source", "camera"),
+    #     }
 
-        filename = save_results(
-            st.session_state.captured_image, st.session_state.edited_text, metadata
-        )
-        st.success(f"Results saved successfully! (Filename: {filename})")
+    #     filename = save_results(
+    #         st.session_state.captured_image, st.session_state.edited_text, metadata
+    #     )
+    #     st.success(f"Results saved successfully! (Filename: {filename})")
 
-        # Reset session state
-        st.session_state.captured_image = None
-        st.session_state.ocr_text = None
-        st.session_state.edited_text = None
+    #     # Reset session state
+    #     st.session_state.captured_image = None
+    #     st.session_state.ocr_text = None
+    #     st.session_state.edited_text = None
