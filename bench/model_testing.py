@@ -119,102 +119,106 @@ def format_prompt(template: str, question_data: Dict[str, Any]) -> str:
         return question_data.get("Question", "Missing Question Text")
 
 
-# --- Main processing loop ---
-print("\n--- Starting Benchmark Runs ---")
-start_time = time.time()
+def main():
+    # --- Main processing loop ---
+    print("\n--- Starting Benchmark Runs ---")
+    start_time = time.time()
 
-for benchmark_name, config in benchmarks.items():
-    print(f"\n--- Running Benchmark: {benchmark_name} ---")
-    data_list = config["data"]
-    prompt_template = config["prompt_template"]
-    benchmark_results: List[Dict[str, Any]] = []
+    for benchmark_name, config in benchmarks.items():
+        print(f"\n--- Running Benchmark: {benchmark_name} ---")
+        data_list = config["data"]
+        prompt_template = config["prompt_template"]
+        benchmark_results: List[Dict[str, Any]] = []
 
-    if not data_list:
-        print(f"Warning: No data found for benchmark '{benchmark_name}'. Skipping.")
-        continue
+        if not data_list:
+            print(f"Warning: No data found for benchmark '{benchmark_name}'. Skipping.")
+            continue
 
-    for idx, question_data in enumerate(data_list):
-        print(f"  Processing {benchmark_name} Question {idx+1}/{len(data_list)}...")
-        formatted_prompt = format_prompt(prompt_template, question_data)
-        question_results: Dict[str, Any] = {
-            "question_index": idx,
-            "original_question": question_data.get("Question"),
-            "original_answer": question_data.get(
-                "Answer"
-            ),  # Store original answer for later evaluation
-            "formatted_prompt": formatted_prompt,
-            "model_responses": {},
-        }
+        for idx, question_data in enumerate(data_list):
+            print(f"  Processing {benchmark_name} Question {idx+1}/{len(data_list)}...")
+            formatted_prompt = format_prompt(prompt_template, question_data)
+            question_results: Dict[str, Any] = {
+                "question_index": idx,
+                "original_question": question_data.get("Question"),
+                "original_answer": question_data.get(
+                    "Answer"
+                ),  # Store original answer for later evaluation
+                "formatted_prompt": formatted_prompt,
+                "model_responses": {},
+            }
 
-        # Run LiteLLM models
-        for model in litellm_models:
-            try:
-                # print(f"    Querying {model} (LiteLLM)...")
-                response = completion(
-                    model=model,
-                    messages=[{"role": "user", "content": formatted_prompt}],
-                    # Consider adding parameters like max_tokens, temperature if needed
-                    # max_tokens=200,
-                    # temperature=0.3
-                )
-                model_response_content = response.choices[0].message.content
-                question_results["model_responses"][model] = model_response_content
-                # print(f"      Response received.")
-            except Exception as e:
-                error_message = f"Error: {type(e).__name__} - {e}"
-                print(f"    Error querying {model} (LiteLLM): {error_message}")
-                question_results["model_responses"][model] = error_message
-            finally:
-                time.sleep(0.5)  # Small delay to help avoid rate limiting
+            # Run LiteLLM models
+            for model in litellm_models:
+                try:
+                    # print(f"    Querying {model} (LiteLLM)...")
+                    response = completion(
+                        model=model,
+                        messages=[{"role": "user", "content": formatted_prompt}],
+                        # Consider adding parameters like max_tokens, temperature if needed
+                        # max_tokens=200,
+                        # temperature=0.3
+                    )
+                    model_response_content = response.choices[0].message.content
+                    question_results["model_responses"][model] = model_response_content
+                    # print(f"      Response received.")
+                except Exception as e:
+                    error_message = f"Error: {type(e).__name__} - {e}"
+                    print(f"    Error querying {model} (LiteLLM): {error_message}")
+                    question_results["model_responses"][model] = error_message
+                finally:
+                    time.sleep(0.5)  # Small delay to help avoid rate limiting
 
-        # Run Cohere models
-        for model in cohere_models:
-            try:
-                # print(f"    Querying {model} (Cohere)...")
-                response = co.chat(
-                    model=model,
-                    message=formatted_prompt,
-                    # Consider adding parameters like max_tokens, temperature if needed
-                    # max_tokens=200,
-                    # temperature=0.3
-                )
-                model_response_content = response.text
-                question_results["model_responses"][model] = model_response_content
-                # print(f"      Response received.")
-            except Exception as e:
-                error_message = f"Error: {type(e).__name__} - {e}"
-                print(f"    Error querying {model} (Cohere): {error_message}")
-                question_results["model_responses"][model] = error_message
-            finally:
-                time.sleep(0.5)  # Small delay
+            # Run Cohere models
+            for model in cohere_models:
+                try:
+                    # print(f"    Querying {model} (Cohere)...")
+                    response = co.chat(
+                        model=model,
+                        message=formatted_prompt,
+                        # Consider adding parameters like max_tokens, temperature if needed
+                        # max_tokens=200,
+                        # temperature=0.3
+                    )
+                    model_response_content = response.text
+                    question_results["model_responses"][model] = model_response_content
+                    # print(f"      Response received.")
+                except Exception as e:
+                    error_message = f"Error: {type(e).__name__} - {e}"
+                    print(f"    Error querying {model} (Cohere): {error_message}")
+                    question_results["model_responses"][model] = error_message
+                finally:
+                    time.sleep(0.5)  # Small delay
 
-        benchmark_results.append(question_results)
-        print(f"  Finished Question {idx+1}/{len(data_list)}.")
+            benchmark_results.append(question_results)
+            print(f"  Finished Question {idx+1}/{len(data_list)}.")
 
-    results[benchmark_name] = benchmark_results
-    print(f"--- Benchmark {benchmark_name} Complete ---")
+        results[benchmark_name] = benchmark_results
+        print(f"--- Benchmark {benchmark_name} Complete ---")
 
 
-# --- Output results ---
-end_time = time.time()
-print(
-    f"\n--- All Benchmarks Complete (Total Time: {end_time - start_time:.2f} seconds) ---"
-)
+    # --- Output results ---
+    end_time = time.time()
+    print(
+        f"\n--- All Benchmarks Complete (Total Time: {end_time - start_time:.2f} seconds) ---"
+    )
 
-# Example: Saving results to a JSON file
-results_filename = "benchmark_results.json"
-try:
-    with open(results_filename, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2, ensure_ascii=False)
-    print(f"Results successfully saved to {results_filename}")
-except Exception as e:
-    print(f"Error saving results to JSON file '{results_filename}': {e}")
+    # Example: Saving results to a JSON file
+    results_filename = "benchmark_results.json"
+    try:
+        with open(results_filename, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2, ensure_ascii=False)
+        print(f"Results successfully saved to {results_filename}")
+    except Exception as e:
+        print(f"Error saving results to JSON file '{results_filename}': {e}")
 
-# Optional: Print a summary or first few results
-# print("\nSample Results:")
-# for benchmark_name, benchmark_data in results.items():
-#     if benchmark_data:
-#         print(f"\n{benchmark_name} (First Result):")
-#         print(json.dumps(benchmark_data[0], indent=2, ensure_ascii=False))
-#     else:
-#         print(f"\n{benchmark_name}: No results generated.")
+    # Optional: Print a summary or first few results
+    # print("\nSample Results:")
+    # for benchmark_name, benchmark_data in results.items():
+    #     if benchmark_data:
+    #         print(f"\n{benchmark_name} (First Result):")
+    #         print(json.dumps(benchmark_data[0], indent=2, ensure_ascii=False))
+    #     else:
+    #         print(f"\n{benchmark_name}: No results generated.")
+
+if __name__ == "__main__":
+    main()
