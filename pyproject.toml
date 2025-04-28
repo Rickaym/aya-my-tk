@@ -1,11 +1,10 @@
 [project]
-name = "burmese-ocr"
+name = "aya-burmese-expeditions"
 version = "0.1.0"
-description = "A tool for OCR of Burmese text"
+description = ""
 readme = "README.md"
 requires-python = ">=3.7"
 dependencies = [
-    "pytesseract",
     "pillow",
     "streamlit",
     "opencv-python",
@@ -15,4 +14,9 @@ dependencies = [
     "google-cloud-documentai>=3.3.0",
     "pdf2image>=1.17.0",
     "python-dotenv>=0.21.1",
+    "cohere>=4.36",
+    "litellm>=0.1.202",
+    "selenium>=4.11.2",
+    "webdriver-manager>=4.0.2",
+    "gradio-client>=0.2.6",
 ]
