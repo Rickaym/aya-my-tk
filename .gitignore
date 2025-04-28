@@ -1,3 +1,6 @@
 data
 .venv
 *.jpg
+.env
+downloads/*
+*.pyc
