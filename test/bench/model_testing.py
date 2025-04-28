@@ -20,9 +20,11 @@ logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 
 
 litellm_models = [
-    # "gpt-4o",
-    # "gemini/gemini-2.0-flash",
-    # "openrouter/google/gemma-3-12b-it:free",
+    "gpt-4o",
+    "gemini/gemini-2.0-flash",
+    "openrouter/google/gemma-3-12b-it",
+    "openrouter/google/gemma-3-27b-it",
+    "openrouter/deepseek/deepseek-chat"
 ]
 
 
@@ -34,8 +36,8 @@ cohere_models = [
 ]
 
 gradio_client_models = [
-    "sail/Sailor2-20B-Chat",
-    "sail/Sailor-14B-Chat"
+    # "sail/Sailor2-20B-Chat",
+    # "sail/Sailor-14B-Chat"
 ]
 
 
@@ -52,12 +54,12 @@ class ChoiceBased(Question):
 
 # Load data with error handling
 try:
-    TRUE_OR_FALSE: List[ChoiceBased] = load_csv_as_dicts("book/tof_qna.csv")
+    TRUE_OR_FALSE: List[ChoiceBased] = [] # load_csv_as_dicts("book/tof_qna.csv")
     SHORT_QNA_DATA: List[Question] = load_csv_as_dicts("book/short_qna.csv")
-    MULTIPLE_CHOICE: List[ChoiceBased] = load_csv_as_dicts(
-        "book/multiple_choice_qna.csv"
-    )
-    FILL_IN_BLANK: List[Question] = load_csv_as_dicts("book/fib.csv")
+    MULTIPLE_CHOICE: List[ChoiceBased] = [] # load_csv_as_dicts(
+    #     "book/multiple_choice_qna.csv"
+    # )
+    FILL_IN_BLANK: List[Question] = [] # load_csv_as_dicts("book/fib.csv")
     print("Benchmark data loaded successfully.")
 except FileNotFoundError as e:
     print(f"Error loading CSV data: {e}.")
@@ -199,10 +201,16 @@ def main():
             for model in gradio_client_models:
                 if model not in gradio_models:
                     gradio_models[model] = Client(model)
-                response = gradio_models[model].predict(
-                    formatted_prompt, api_name="/chat"
-                )
-                question_results["model_responses"][model] = response
+
+                try:
+                    response = gradio_models[model].predict(
+                        formatted_prompt, api_name="/chat"
+                    )
+                    question_results["model_responses"][model] = response
+                except Exception as e:
+                    error_message = f"Error: {type(e).__name__} - {e}"
+                    print(f"    Error querying {model} (Gradio): {error_message}")
+                    question_results["model_responses"][model] = error_message
 
             benchmark_results.append(question_results)
             print(f"  Finished Question {idx+1}/{len(data_list)}.")
