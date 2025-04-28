@@ -33,10 +33,7 @@ cohere_models = [
     # "command-r-08-2024"
 ]
 
-gradio_client_models = [
-    "sail/Sailor2-20B-Chat",
-    "sail/Sailor-14B-Chat"
-]
+gradio_client_models = ["sail/Sailor2-20B-Chat", "sail/Sailor-14B-Chat"]
 
 
 class Question(TypedDict):
@@ -52,12 +49,12 @@ class ChoiceBased(Question):
 
 # Load data with error handling
 try:
-    TRUE_OR_FALSE: List[ChoiceBased] = load_csv_as_dicts("book/tof_qna.csv")[:1]
-    SHORT_QNA_DATA: List[Question] = load_csv_as_dicts("book/short_qna.csv")[:1]
+    TRUE_OR_FALSE: List[ChoiceBased] = load_csv_as_dicts("book/tof_qna.csv")
+    SHORT_QNA_DATA: List[Question] = load_csv_as_dicts("book/short_qna.csv")
     MULTIPLE_CHOICE: List[ChoiceBased] = load_csv_as_dicts(
         "book/multiple_choice_qna.csv"
-    )[:1]
-    FILL_IN_BLANK: List[Question] = load_csv_as_dicts("book/fib.csv")[:1]
+    )
+    FILL_IN_BLANK: List[Question] = load_csv_as_dicts("book/fib.csv")
     print("Benchmark data loaded successfully.")
 except FileNotFoundError as e:
     print(f"Error loading CSV data: {e}.")
@@ -199,7 +196,9 @@ def main():
             for model in gradio_client_models:
                 if model not in gradio_models:
                     gradio_models[model] = Client(model)
-                response = gradio_models[model].predict(formatted_prompt, api_name="/chat")
+                response = gradio_models[model].predict(
+                    formatted_prompt, api_name="/chat"
+                )
                 question_results["model_responses"][model] = response
 
             benchmark_results.append(question_results)
@@ -207,7 +206,6 @@ def main():
 
         results[benchmark_name] = benchmark_results
         print(f"--- Benchmark {benchmark_name} Complete ---")
-
 
     # --- Output results ---
     end_time = time.time()
@@ -232,6 +230,7 @@ def main():
     #         print(json.dumps(benchmark_data[0], indent=2, ensure_ascii=False))
     #     else:
     #         print(f"\n{benchmark_name}: No results generated.")
+
 
 if __name__ == "__main__":
     main()
