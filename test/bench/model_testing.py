@@ -33,7 +33,10 @@ cohere_models = [
     # "command-r-08-2024"
 ]
 
-gradio_client_models = ["sail/Sailor2-20B-Chat", "sail/Sailor-14B-Chat"]
+gradio_client_models = [
+    "sail/Sailor2-20B-Chat",
+    "sail/Sailor-14B-Chat"
+]
 
 
 class Question(TypedDict):
