@@ -20,11 +20,12 @@ logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 
 
 litellm_models = [
-    "gpt-4o",
-    "gemini/gemini-2.0-flash",
-    "openrouter/google/gemma-3-12b-it",
-    "openrouter/google/gemma-3-27b-it",
-    "openrouter/deepseek/deepseek-chat"
+    # "gpt-4o",
+    # "gemini/gemini-2.0-flash",
+    # "openrouter/google/gemma-3-12b-it",
+    # "openrouter/google/gemma-3-27b-it",
+    # "openrouter/deepseek/deepseek-chat"
+    "openrouter/anthropic/claude-3.7-sonnet"
 ]
 
 
@@ -105,17 +106,17 @@ results: Dict[str, List[Dict[str, Any]]] = {}
 def format_prompt(template: str, question_data: Dict[str, Any]) -> str:
     """Formats the prompt string using question data."""
     format_kwargs = {
-        "question": question_data.get("Question", ""),
-        "choices": question_data.get("Choices", ""),  # Needed for TF and MC
+        "question": question_data.get("Question", "").strip(),
+        "choices": question_data.get("Choices", "").strip(),  # Needed for TF and MC
     }
     try:
         # Only include 'choices' if the template actually uses it
         if "{choices}" in template:
             return template.format(
                 question=format_kwargs["question"], choices=format_kwargs["choices"]
-            )
+            ).strip()
         else:
-            return template.format(question=format_kwargs["question"])
+            return template.format(question=format_kwargs["question"]).strip()
     except KeyError as e:
         print(
             f"Warning: Formatting error for template. Missing key {e} for question: {question_data.get('Question')}"
