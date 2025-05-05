@@ -3,7 +3,7 @@ name = "aya-burmese-expeditions"
 version = "0.1.0"
 description = ""
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 dependencies = [
     "pillow",
     "streamlit",
@@ -14,9 +14,18 @@ dependencies = [
     "google-cloud-documentai>=3.3.0",
     "pdf2image>=1.17.0",
     "python-dotenv>=0.21.1",
-    "cohere>=4.36",
     "litellm>=0.1.202",
     "selenium>=4.11.2",
     "webdriver-manager>=4.0.2",
     "gradio-client>=0.2.6",
+    "pymupdf>=1.22.5",
+    "pymyanlp",
+    "networkx>=2.6.3",
+    "matplotlib>=3.5.3",
+    "scipy>=1.7.3",
+    "fastavro==1.10.0",
+    "cohere>=4.57",
 ]
+
+[tool.uv.sources]
+pymyanlp = { git = "https://github.com/Rickaym/pymyanlp" }
