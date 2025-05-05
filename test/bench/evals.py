@@ -13,7 +13,7 @@ import common
 # from .mgsm_eval import MGSMEval
 from mmlu_eval import MMLUEval
 from sampler.openrouter_sampler import OpenRouterSampler
-
+from sampler.cohere_sampler import CohereSampler
 # from .simpleqa_eval import SimpleQAEval
 # from sampler.chat_completion_sampler import (
 #     OPENAI_SYSTEM_MESSAGE_API,
@@ -47,21 +47,30 @@ def main():
         # "gpt-4o": OpenRouterSampler(
         #     model="gpt-4o"
         # ),
-        # "openrouter/deepseek/deepseek-chat": OpenRouterSampler(
-        #     model="openrouter/deepseek/deepseek-chat"
-        # ),
-        "openrouter/google/gemini-2.0-flash-001": OpenRouterSampler(
+        "deepseek-chat": OpenRouterSampler(
+            model="openrouter/deepseek/deepseek-chat"
+        ),
+        "gemini-2.0-flash-001": OpenRouterSampler(
             model="openrouter/google/gemini-2.0-flash-001"
         ),
-        # "openrouter/google/gemma-3-12b-it": OpenRouterSampler(
-        #     model="openrouter/google/gemma-3-12b-it"
-        # ),
-        # "openrouter/google/gemma-3-27b-it": OpenRouterSampler(
-        #     model="openrouter/google/gemma-3-27b-it"
-        # ),
-        # "openrouter/anthropic/claude-3.5-sonnet-haiku": OpenRouterSampler(
-        #     model="openrouter/anthropic/claude-3.5-sonnet-haiku"
-        # ),
+        "gemma-3-12b-it": OpenRouterSampler(
+            model="openrouter/google/gemma-3-12b-it"
+        ),
+        "gemma-3-27b-it": OpenRouterSampler(
+            model="openrouter/google/gemma-3-27b-it"
+        ),
+        "c4ai-aya-expanse-8b": CohereSampler(
+            model="c4ai-aya-expanse-8b"
+        ),
+        "c4ai-aya-expanse-32b": CohereSampler(
+            model="c4ai-aya-expanse-32b"
+        ),
+        "command-r7b-12-2024": CohereSampler(
+            model="command-r7b-12-2024"
+        ),
+        "command-r-08-2024": CohereSampler(
+            model="command-r-08-2024"
+        ),
     }
 
     if args.list_models:
