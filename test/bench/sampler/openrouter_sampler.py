@@ -1,7 +1,7 @@
 import time
 from typing import Optional
 import litellm
-
+from litellm.exceptions import RateLimitError
 from models import MessageList, SamplerBase
 
 class OpenRouterSampler(SamplerBase):
@@ -41,7 +41,7 @@ class OpenRouterSampler(SamplerBase):
                     temperature=self.temperature,
                 )
                 return response.choices[0].message.content
-            except litellm.exceptions.RateLimitError as e:
+            except RateLimitError as e:
                 exception_backoff = 2**trial  # exponential back off
                 print(
                     f"Rate limit exception so wait and retry {trial} after {exception_backoff} sec",
