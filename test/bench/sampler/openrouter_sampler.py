@@ -41,7 +41,7 @@ class OpenRouterSampler(SamplerBase):
                     temperature=self.temperature,
                 )
                 return response.choices[0].message.content
-            except litellm.RateLimitError as e:
+            except litellm.exceptions.RateLimitError as e:
                 exception_backoff = 2**trial  # exponential back off
                 print(
                     f"Rate limit exception so wait and retry {trial} after {exception_backoff} sec",
