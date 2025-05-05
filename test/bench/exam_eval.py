@@ -2,12 +2,6 @@ import cohere
 from typing import TypedDict, List, Dict, Any
 from litellm import completion
 from utils import load_csv_as_dicts
-from templates import (
-    TF_PROMPT,
-    MULTIPLE_CHOICE_PROMPT,
-    SHORT_QNA as SHORT_QNA_TEMPLATE,
-    FIB_PROMPT,
-)
 import litellm
 import logging
 import time
@@ -18,6 +12,29 @@ from gradio_client import Client
 litellm.set_verbose = False
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 
+
+TF_PROMPT = """အောက်ပါတို့ကို မှားလျှင် (မှား)၊ မှန်လျှင် (မှန်) ဟု ဖြေဆိုပါ
+
+{question}
+"""
+
+MULTIPLE_CHOICE_PROMPT = """အောက်ပါတို့မှ အဖြေမှန်ကို ရွေးပါ
+
+{question}
+
+{choices}
+"""
+
+SHORT_QNA_TEMPLATE = """အောက်ပါတို့ကို ဖြေဆိုပါ
+
+{question}
+"""
+
+
+FIB_PROMPT = """အောက်ပါတို့ကို ကွက်လပ်ဖြည့်ပါ
+
+{question}
+"""
 
 litellm_models = [
     # "gpt-4o",
@@ -55,12 +72,12 @@ class ChoiceBased(Question):
 
 # Load data with error handling
 try:
-    TRUE_OR_FALSE: List[ChoiceBased] = [] # load_csv_as_dicts("book/tof_qna.csv")
+    TRUE_OR_FALSE: List[ChoiceBased] = []  # load_csv_as_dicts("book/tof_qna.csv")
     SHORT_QNA_DATA: List[Question] = load_csv_as_dicts("book/short_qna.csv")
-    MULTIPLE_CHOICE: List[ChoiceBased] = [] # load_csv_as_dicts(
+    MULTIPLE_CHOICE: List[ChoiceBased] = []  # load_csv_as_dicts(
     #     "book/multiple_choice_qna.csv"
     # )
-    FILL_IN_BLANK: List[Question] = [] # load_csv_as_dicts("book/fib.csv")
+    FILL_IN_BLANK: List[Question] = []  # load_csv_as_dicts("book/fib.csv")
     print("Benchmark data loaded successfully.")
 except FileNotFoundError as e:
     print(f"Error loading CSV data: {e}.")
@@ -126,6 +143,52 @@ def format_prompt(template: str, question_data: Dict[str, Any]) -> str:
     except Exception as e:
         print(f"Warning: An unexpected error occurred during prompt formatting: {e}")
         return question_data.get("Question", "Missing Question Text")
+
+
+def exam_fix():
+    print("Loading benchmark results from benchmark_results.json...")
+    with open("benchmark_results.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+    print(f"Loaded data with {len(data)} question types")
+
+    for q_type, questions in data.items():
+        print(f"\nProcessing question type: {q_type} with {len(questions)} questions")
+        for idx, q in enumerate(questions):
+            for model, response in q["model_responses"].items():
+                if not response.startswith("Error:"):
+                    continue
+
+                print(f"  Fixing error for {q_type}, question {idx+1}, model {model}")
+                print(f"  Original error: {response}")
+
+                formatted_prompt = q["formatted_prompt"]
+                if model in litellm_models:
+                    print(f"  Retrying with LiteLLM model: {model}")
+                    response = completion(
+                        model=model.replace(":free", ""),
+                        messages=[{"role": "user", "content": formatted_prompt}],
+                    )
+                    data[q_type][idx]["model_responses"][model] = response.choices[
+                        0
+                    ].message.content
+                    print(f"  Successfully retrieved new response")
+                elif model in cohere_models:
+                    print(f"  Retrying with Cohere model: {model}")
+                    response = co.chat(
+                        model=model,
+                        message=formatted_prompt,
+                        # Consider adding parameters like max_tokens, temperature if needed
+                        # max_tokens=200,
+                        # temperature=0.3
+                    )
+                    model_response_content = response.text
+                    data[q_type][idx]["model_responses"][model] = model_response_content
+                    print(f"  Successfully retrieved new response")
+
+    print("\nSaving fixed results to benchmark_results_fixed.json...")
+    with open("benchmark_results_fixed.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
+    print("Done! Fixed results saved successfully.")
 
 
 def main():

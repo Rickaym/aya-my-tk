@@ -1,0 +1,186 @@
+import json
+import os
+import argparse
+import pandas as pd
+
+import common
+
+# from .browsecomp_eval import BrowseCompEval
+# from .drop_eval import DropEval
+# from .gpqa_eval import GPQAEval
+# from .humaneval_eval import HumanEval
+# from .math_eval import MathEval
+# from .mgsm_eval import MGSMEval
+from mmlu_eval import MMLUEval
+from sampler.openrouter_sampler import OpenRouterSampler
+
+# from .simpleqa_eval import SimpleQAEval
+# from sampler.chat_completion_sampler import (
+#     OPENAI_SYSTEM_MESSAGE_API,
+#     OPENAI_SYSTEM_MESSAGE_CHATGPT,
+#     ChatCompletionSampler,
+# )
+# from .sampler.o_chat_completion_sampler import OChatCompletionSampler
+# from .sampler.responses_sampler import ResponsesSampler
+# from .sampler.claude_sampler import ClaudeCompletionSampler, CLAUDE_SYSTEM_MESSAGE_LMSYS
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Run sampling and evaluations using different samplers and evaluations."
+    )
+    parser.add_argument(
+        "--list-models", action="store_true", help="List available models"
+    )
+    parser.add_argument("--model", type=str, help="Select a model by name")
+    parser.add_argument("--debug", action="store_true", help="Run in debug mode")
+    parser.add_argument(
+        "--examples", type=int, help="Number of examples to use (overrides default)"
+    )
+    parser.add_argument(
+        "--language", "-l", type=str, help="Language to use (overrides default)"
+    )
+
+    args = parser.parse_args()
+
+    models = {
+        # "gpt-4o": OpenRouterSampler(
+        #     model="gpt-4o"
+        # ),
+        # "openrouter/deepseek/deepseek-chat": OpenRouterSampler(
+        #     model="openrouter/deepseek/deepseek-chat"
+        # ),
+        "openrouter/google/gemini-2.0-flash-001": OpenRouterSampler(
+            model="openrouter/google/gemini-2.0-flash-001"
+        ),
+        # "openrouter/google/gemma-3-12b-it": OpenRouterSampler(
+        #     model="openrouter/google/gemma-3-12b-it"
+        # ),
+        # "openrouter/google/gemma-3-27b-it": OpenRouterSampler(
+        #     model="openrouter/google/gemma-3-27b-it"
+        # ),
+        # "openrouter/anthropic/claude-3.5-sonnet-haiku": OpenRouterSampler(
+        #     model="openrouter/anthropic/claude-3.5-sonnet-haiku"
+        # ),
+    }
+
+    if args.list_models:
+        print("Available models:")
+        for model_name in models.keys():
+            print(f" - {model_name}")
+        return
+
+    if args.model:
+        if args.model == "all":
+            models = models
+        elif args.model not in models:
+            print(f"Error: Model '{args.model}' not found.")
+            return
+        else:
+            models = {args.model: models[args.model]}
+
+    # grading_sampler = OpenRouterSampler(model="openrouter/google/gemini-2.0-flash")
+    # equality_checker = OpenRouterSampler(model="openrouter/google/gemini-2.0-flash")
+    # ^^^ used for fuzzy matching, just for math
+
+    def get_evals(eval_name, debug_mode):
+        num_examples = (
+            args.examples if args.examples is not None else (5 if debug_mode else None)
+        )
+        # Set num_examples = None to reproduce full evals
+        match eval_name:
+            case "mmlu":
+                return MMLUEval(
+                    num_examples=1 if debug_mode else num_examples, language="MYA"
+                )
+            # case "math":
+            #     return MathEval(
+            #         equality_checker=equality_checker,
+            #         num_examples=num_examples,
+            #         n_repeats=1 if debug_mode else 10,
+            #     )
+            # case "gpqa":
+            #     return GPQAEval(
+            #         n_repeats=1 if debug_mode else 10, num_examples=num_examples
+            #     )
+            # case "mgsm":
+            #     return MGSMEval(num_examples_per_lang=10 if debug_mode else 250)
+            # case "drop":
+            #     return DropEval(
+            #         num_examples=10 if debug_mode else num_examples,
+            #         train_samples_per_prompt=3,
+            #     )
+            # case "humaneval":
+            #     return HumanEval(num_examples=10 if debug_mode else num_examples)
+            # case "simpleqa":
+            #     return SimpleQAEval(
+            #         grader_model=grading_sampler,
+            #         num_examples=10 if debug_mode else num_examples,
+            #     )
+            # case "browsecomp":
+            #     return BrowseCompEval(
+            #         grader_model=grading_sampler,
+            #         num_examples=10 if debug_mode else num_examples,
+            #     )
+            case _:
+                raise Exception(f"Unrecognized eval type: {eval_name}")
+
+    evals = {
+        eval_name: get_evals(eval_name, args.debug)
+        for eval_name in [
+            # "simpleqa",
+            "mmlu",
+            # "math",
+            # "gpqa",
+            # "mgsm",
+            # "drop",
+            # "humaneval",
+            # "browsecomp",
+        ]
+    }
+    print(evals)
+    debug_suffix = "_DEBUG" if args.debug else ""
+    print(debug_suffix)
+    mergekey2resultpath = {}
+    for model_name, sampler in models.items():
+        for eval_name, eval_obj in evals.items():
+            result = eval_obj(sampler)
+            # ^^^ how to use a sampler
+            file_stem = f"./tmp/{eval_name}_{model_name}"
+            os.makedirs(os.path.dirname(file_stem), exist_ok=True)
+            report_filename = f"{file_stem}{debug_suffix}.html"
+
+            print(f"Writing report to {report_filename}")
+            with open(report_filename, "w", encoding="utf-8") as fh:
+                fh.write(common.make_report(result))
+            metrics = result.metrics | {"score": result.score}
+
+            print(metrics)
+            result_filename = f"{file_stem}{debug_suffix}.json"
+            with open(result_filename, "w", encoding="utf-8") as f:
+                f.write(json.dumps(metrics, indent=2))
+            print(f"Writing results to {result_filename}")
+            mergekey2resultpath[f"{file_stem}"] = result_filename
+    merge_metrics = []
+    for eval_model_name, result_filename in mergekey2resultpath.items():
+        try:
+            result = json.load(open(result_filename, "r+"))
+        except Exception as e:
+            print(e, result_filename)
+            continue
+        result = result.get("f1_score", result.get("score", None))
+        eval_name = eval_model_name[: eval_model_name.find("_")]
+        model_name = eval_model_name[eval_model_name.find("_") + 1 :]
+        merge_metrics.append(
+            {"eval_name": eval_name, "model_name": model_name, "metric": result}
+        )
+    merge_metrics_df = pd.DataFrame(merge_metrics).pivot(
+        index=["model_name"], columns="eval_name"
+    )
+    print("\nAll results: ")
+    print(merge_metrics_df.to_markdown())
+    return merge_metrics
+
+
+if __name__ == "__main__":
+    main()
