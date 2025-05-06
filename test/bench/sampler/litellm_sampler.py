@@ -40,10 +40,10 @@ class LitellmSampler(SamplerBase):
                     temperature=self.temperature,
                 )
                 return response.choices[0].message.content
-            except litellm.exceptions.RateLimitError as e:
+            except Exception as e:
                 exception_backoff = 2**trial  # exponential back off
                 print(
-                    f"Rate limit exception so wait and retry {trial} after {exception_backoff} sec",
+                    f"Exception so wait and retry {trial} after {exception_backoff} sec",
                     e,
                 )
                 time.sleep(exception_backoff)

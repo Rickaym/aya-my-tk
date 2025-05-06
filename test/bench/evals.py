@@ -50,9 +50,9 @@ def main():
         # "deepseek-chat": LitellmSampler(
         #     model="openrouter/deepseek/deepseek-chat"
         # ),
-        "gemini-2.0-flash-001": LitellmSampler(
-            model="openrouter/google/gemini-2.0-flash-001"
-        ),
+        # "gemini-2.0-flash-001": LitellmSampler(
+        #     model="openrouter/google/gemini-2.0-flash-001"
+        # ),
         "gemma-3-12b-it": LitellmSampler(
             model="openrouter/google/gemma-3-12b-it"
         ),
