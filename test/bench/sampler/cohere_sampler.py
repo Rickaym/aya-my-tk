@@ -1,8 +1,6 @@
 import time
-from typing import Optional
 import cohere.client_v2 as cohere
-from cohere.errors import TooManyRequestsError
-
+from typing import Optional
 from models import MessageList, SamplerBase
 
 
@@ -46,15 +44,11 @@ class CohereSampler(SamplerBase):
                 )
 
                 return response.message.content[0].text
-            except TooManyRequestsError as e:
-                if "rate_limit" in str(e).lower():
-                    exception_backoff = 2**trial  # exponential back off
-                    print(
-                        f"Rate limit exception so wait and retry {trial} after {exception_backoff} sec",
-                        e,
-                    )
-                    time.sleep(exception_backoff)
-                    trial += 1
-                else:
-                    # unknown error shall throw exception
-                    raise
+            except Exception as e:
+                exception_backoff = 2**trial  # exponential back off
+                print(
+                    f"Exception so wait and retry {trial} after {exception_backoff} sec",
+                    e,
+                )
+                time.sleep(exception_backoff)
+                trial += 1
