@@ -44,21 +44,21 @@ def main():
     args = parser.parse_args()
 
     models = {
-        # "gpt-4o": OpenRouterSampler(
-        #     model="gpt-4o"
-        # ),
-        # "deepseek-chat": LitellmSampler(
-        #     model="openrouter/deepseek/deepseek-chat"
-        # ),
-        # "gemini-2.0-flash-001": LitellmSampler(
-        #     model="openrouter/google/gemini-2.0-flash-001"
-        # ),
-        # "gemma-3-12b-it": LitellmSampler(
-        #     model="openrouter/google/gemma-3-12b-it"
-        # ),
-        # "gemma-3-27b-it": LitellmSampler(
-        #     model="openrouter/google/gemma-3-27b-it"
-        # ),
+        "deepseek-chat": LitellmSampler(
+            model="openrouter/deepseek/deepseek-chat"
+        ),
+        "gemini-2.0-flash-001": LitellmSampler(
+            model="openrouter/google/gemini-2.0-flash-001"
+        ),
+        "gemma-3-4b-it": LitellmSampler(
+            model="openrouter/google/gemma-3-4b-it"
+        ),
+        "gemma-3-12b-it": LitellmSampler(
+            model="openrouter/google/gemma-3-12b-it"
+        ),
+        "gemma-3-27b-it": LitellmSampler(
+            model="openrouter/google/gemma-3-27b-it"
+        ),
         "c4ai-aya-expanse-8b": CohereSampler(
             model="c4ai-aya-expanse-8b"
         ),
