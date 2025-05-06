@@ -59,6 +59,15 @@ def setup():
         json.dump(list(my_map.values()), f, indent=2, ensure_ascii=False)
 
 
+def save(results: Dict[str, Any], results_filename = "translate_results.json"):
+    try:
+        with open(results_filename, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2, ensure_ascii=False)
+        print(f"Results successfully saved to {results_filename}")
+    except Exception as e:
+        print(f"Error saving results to JSON file '{results_filename}': {e}")
+
+
 def main():
     # --- Main processing loop ---
     print("\n--- Starting Translation Run ---")
@@ -110,6 +119,7 @@ def main():
             print(f"    Error querying {model} (LiteLLM): {error_message}")
             question_results["model_responses"][model] = error_message
         finally:
+            save(results)
             time.sleep(0.5)  # Small delay to help avoid rate limiting
 
         benchmark_results.append(question_results)
@@ -125,14 +135,7 @@ def main():
     )
 
     # Example: Saving results to a JSON file
-    results_filename = "translate_results.json"
-    try:
-        with open(results_filename, "w", encoding="utf-8") as f:
-            json.dump(results, f, indent=2, ensure_ascii=False)
-        print(f"Results successfully saved to {results_filename}")
-    except Exception as e:
-        print(f"Error saving results to JSON file '{results_filename}': {e}")
-
+    save(results)
     # Optional: Print a summary or first few results
     # print("\nSample Results:")
     # for benchmark_name, benchmark_data in results.items():
