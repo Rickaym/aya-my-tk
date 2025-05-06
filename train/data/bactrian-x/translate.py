@@ -98,29 +98,37 @@ def main():
             "formatted_prompt": formatted_prompt,
             "model_responses": {},
         }
+        while True:
+            try:
+                # print(f"    Querying {model} (LiteLLM)...")
+                response = completion(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": SYSTEM_INSTRUCTION},
+                        {"role": "user", "content": formatted_prompt},
+                    ],
+                    # Consider adding parameters like max_tokens, temperature if needed
+                    # max_tokens=200,
+                    # temperature=0.3
+                )
+                model_response_content = response.choices[0].message.content
+                question_results["model_responses"][model] = model_response_content
+                # print(f"      Response received.")
+            except Exception as e:
+                error_message = f"Error: {type(e).__name__} - {e}"
+                print(f"    Error querying {model} (LiteLLM): {error_message}")
+                question_results["model_responses"][model] = error_message
 
-        try:
-            # print(f"    Querying {model} (LiteLLM)...")
-            response = completion(
-                model=model,
-                messages=[
-                    {"role": "system", "content": SYSTEM_INSTRUCTION},
-                    {"role": "user", "content": formatted_prompt},
-                ],
-                # Consider adding parameters like max_tokens, temperature if needed
-                # max_tokens=200,
-                # temperature=0.3
-            )
-            model_response_content = response.choices[0].message.content
-            question_results["model_responses"][model] = model_response_content
-            # print(f"      Response received.")
-        except Exception as e:
-            error_message = f"Error: {type(e).__name__} - {e}"
-            print(f"    Error querying {model} (LiteLLM): {error_message}")
-            question_results["model_responses"][model] = error_message
-        finally:
-            save(results)
-            time.sleep(0.5)  # Small delay to help avoid rate limiting
+                # Check if it's a rate limit error
+                if "rate limit" in str(e).lower() or "ratelimit" in str(e).lower():
+                    print(f"Rate limit detected. Pausing for 5 minutes before continuing...")
+                    time.sleep(300)  # 5 minutes in seconds
+                    continue
+            else:
+                break
+            finally:
+                save(results)
+                time.sleep(0.5)  # Small delay to help avoid rate limiting
 
         benchmark_results.append(question_results)
         print(f"  Finished Question {idx+1}/{len(data_list)}.")
