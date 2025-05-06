@@ -32,7 +32,7 @@ def main():
     parser.add_argument(
         "--list-models", action="store_true", help="List available models"
     )
-    parser.add_argument("--model", type=str, help="Select a model by name")
+    parser.add_argument("--model", "-m", type=str, help="Select a model by name")
     parser.add_argument("--debug", action="store_true", help="Run in debug mode")
     parser.add_argument(
         "--examples", type=int, help="Number of examples to use (overrides default)"
@@ -53,12 +53,12 @@ def main():
         # "gemini-2.0-flash-001": LitellmSampler(
         #     model="openrouter/google/gemini-2.0-flash-001"
         # ),
-        "gemma-3-12b-it": LitellmSampler(
-            model="openrouter/google/gemma-3-12b-it"
-        ),
-        "gemma-3-27b-it": LitellmSampler(
-            model="openrouter/google/gemma-3-27b-it"
-        ),
+        # "gemma-3-12b-it": LitellmSampler(
+        #     model="openrouter/google/gemma-3-12b-it"
+        # ),
+        # "gemma-3-27b-it": LitellmSampler(
+        #     model="openrouter/google/gemma-3-27b-it"
+        # ),
         "c4ai-aya-expanse-8b": CohereSampler(
             model="c4ai-aya-expanse-8b"
         ),

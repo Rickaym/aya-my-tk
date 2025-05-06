@@ -25,53 +25,11 @@ QUERY_TEMPLATE_MULTICHOICE = """
 ANSWER_PATTERN_MULTICHOICE = r"(?i)Answer[ \t]*:[ \t]*\$?([A-D])\$?"
 ANSWER_PATTERN = r"(?i)Answer\s*:\s*([^\n]+)"
 MULTILINGUAL_ANSWER_PATTERN_TEMPLATE = (
-    "(?i){}[ \t]*([က-ဃ]|[က]|[ခ]|[ဂ]|[ဃ])"
+    "(?i){}[ \t]*(?:\\()?([က-ဃ]|[က]|[ခ]|[ဂ]|[ဃ])(?:\\))?"
 )
 # All the different ways "Answer" is written in different languages
 MULTILINGUAL_ANSWER_REGEXES = [
-    "အဖြေ\\s*:",
-    # "Answer\s*:",
-    # "Answer\s*:​​​​​​",  # Korean invisible character
-    # "উত্তর\s*:",
-    # "उत्तर\s*:",
-    # "উত্তরঃ",
-    # "উত্তর\s*:",
-    # "Antwort\s*:",
-    # "답변\s*:",
-    # "정답\s*:",
-    # "답\s*:",
-    # "答案\s*：",
-    # "答案\s*:",
-    # "答\s*：",
-    # "答\s*:",
-    # "答复\s*：",
-    # "答曰\s*：",
-    # "الإجابة:",
-    # "الجواب:",
-    # "إجابة:",
-    # "الإجابة النهائية:",
-    # "الإجابة الصحيحة:",
-    # "الإجابة الصحيحة هي:",
-    # "الإجابة هي:",
-    # "الجواب النهائي:",
-    # "Respuesta\s*:",
-    # "Risposta\s*:",
-    # "答え\s*:",
-    # "答え\s*：",
-    # "回答\s*:",
-    # "回答\s*：",
-    # "解答\s*:",
-    # "Jawaban\s*:",
-    # "Réponse\s*:",
-    # "Resposta\s*:",
-    # "Jibu\s*:",
-    # "Idahun\s*:",
-    # "Ìdáhùn\s*:",
-    # "Idáhùn\s*:",
-    # "Àmọ̀nà\s*:",
-    # "Àdáhùn\s*:",
-    # "Ànúgọ\s*:",
-    # "Àṣàyàn\s*:",
+    "အဖြေ\\s*:(?:\\n{0,2})?",
 ]
 
 
