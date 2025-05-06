@@ -12,7 +12,7 @@ import common
 # from .math_eval import MathEval
 # from .mgsm_eval import MGSMEval
 from mmlu_eval import MMLUEval
-from sampler.openrouter_sampler import OpenRouterSampler
+from sampler.litellm_sampler import LitellmSampler
 from sampler.cohere_sampler import CohereSampler
 # from .simpleqa_eval import SimpleQAEval
 # from sampler.chat_completion_sampler import (
@@ -47,16 +47,16 @@ def main():
         # "gpt-4o": OpenRouterSampler(
         #     model="gpt-4o"
         # ),
-        "deepseek-chat": OpenRouterSampler(
-            model="openrouter/deepseek/deepseek-chat"
-        ),
-        "gemini-2.0-flash-001": OpenRouterSampler(
+        # "deepseek-chat": LitellmSampler(
+        #     model="openrouter/deepseek/deepseek-chat"
+        # ),
+        "gemini-2.0-flash-001": LitellmSampler(
             model="openrouter/google/gemini-2.0-flash-001"
         ),
-        "gemma-3-12b-it": OpenRouterSampler(
+        "gemma-3-12b-it": LitellmSampler(
             model="openrouter/google/gemma-3-12b-it"
         ),
-        "gemma-3-27b-it": OpenRouterSampler(
+        "gemma-3-27b-it": LitellmSampler(
             model="openrouter/google/gemma-3-27b-it"
         ),
         "c4ai-aya-expanse-8b": CohereSampler(

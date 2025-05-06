@@ -3,7 +3,7 @@ from typing import Optional
 import litellm
 from models import MessageList, SamplerBase
 
-class OpenRouterSampler(SamplerBase):
+class LitellmSampler(SamplerBase):
     """
     Sample from OpenRouter API using LiteLLM
     """
@@ -40,14 +40,12 @@ class OpenRouterSampler(SamplerBase):
                     temperature=self.temperature,
                 )
                 return response.choices[0].message.content
-            except Exception as e:
-                if "ratelimit" in str(e).lower():
-                    exception_backoff = 2**trial  # exponential back off
-                    print(
-                        f"Rate limit exception so wait and retry {trial} after {exception_backoff} sec",
-                        e,
-                    )
-                    time.sleep(exception_backoff)
-                    trial += 1
+            except litellm.exceptions.RateLimitError as e:
+                exception_backoff = 2**trial  # exponential back off
+                print(
+                    f"Rate limit exception so wait and retry {trial} after {exception_backoff} sec",
+                    e,
+                )
+                time.sleep(exception_backoff)
+                trial += 1
                 # unknown error shall throw exception
-                raise

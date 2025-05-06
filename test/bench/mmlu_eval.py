@@ -20,7 +20,7 @@ from common import (
     aggregate_results,
     jinja_env,
 )
-from sampler.openrouter_sampler import OpenRouterSampler
+from sampler.litellm_sampler import LitellmSampler
 from models import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 subject2category = {
@@ -133,4 +133,4 @@ class MMLUEval(Eval):
 
 if __name__ == "__main__":
     evaluator = MMLUEval(num_examples=1, language="MYA")
-    evaluator(OpenRouterSampler(model="openrouter/google/gemma-3-12b-it"))
+    evaluator(LitellmSampler(model="openrouter/google/gemma-3-12b-it"))
