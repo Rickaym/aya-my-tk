@@ -54,13 +54,13 @@ class ExamEval(Eval):
         if language != "MYA":
             raise ValueError(f"Language {language} not supported")
 
-        TRUE_OR_FALSE = pandas.read_csv("G12-Exam/tof_qna.csv")[:1]
+        TRUE_OR_FALSE = pandas.read_csv("G12-Exam/tof_qna.csv")
         TRUE_OR_FALSE["Type"] = "True/False"
 
-        MULTIPLE_CHOICE = pandas.read_csv("G12-Exam/multiple_choice_qna.csv")[:1]
+        MULTIPLE_CHOICE = pandas.read_csv("G12-Exam/multiple_choice_qna.csv")
         MULTIPLE_CHOICE["Type"] = "Multiple Choice"
 
-        FILL_IN_BLANK = pandas.read_csv("G12-Exam/fib.csv")[:10]
+        FILL_IN_BLANK = pandas.read_csv("G12-Exam/fib.csv")
         FILL_IN_BLANK["Type"] = "Fill in the Blank"
 
         # Combine all datasets
