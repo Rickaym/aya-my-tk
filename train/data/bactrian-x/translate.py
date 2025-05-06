@@ -92,7 +92,7 @@ def main():
         formatted_prompt = f"Translate the following English text to Myanmar: {row['en_output']}"
 
         question_results: Dict[str, Any] = {
-            "question_index": idx,
+            "question_index": row.get("id"),
             "original_output": row.get("en_output"),
             "original_answer": row.get("output"),  # Store original answer for later evaluation
             "formatted_prompt": formatted_prompt,
