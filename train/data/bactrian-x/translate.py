@@ -1,5 +1,6 @@
 import json
 import time
+import os
 from typing import List, Dict, Any
 from litellm import completion
 
@@ -72,27 +73,40 @@ def main():
     # --- Main processing loop ---
     print("\n--- Starting Translation Run ---")
     start_time = time.time()
-    results = {}
     model = "openrouter/google/gemini-2.5-flash-preview"
 
     with open("en_my.json", "r", encoding="utf-8") as f:
         data_list = json.load(f)
+
+    save_file = "translate_results.json"
+
+    if os.path.exists(save_file):
+        with open(save_file, "r", encoding="utf-8") as f:
+            results = json.load(f)
+    else:
+        results = {}
 
     benchmark_name = "bactrian-x"
 
     print(f"\n--- Running Translation: {benchmark_name} ---")
     benchmark_results: List[Dict[str, Any]] = []
 
+    ids = [i["id"] for i in results.get(benchmark_name, [])]
+
     if not data_list:
         print(f"Warning: No data found for benchmark '{benchmark_name}'. Skipping.")
         return
 
     for idx, row in enumerate(data_list):
+        if row.get("id") in ids:
+            print(f"Skipping {row.get('id')} because it already exists in the results.")
+            continue
+
         print(f"  Processing {benchmark_name} Item {idx+1}/{len(data_list)}...")
         formatted_prompt = f"Translate the following English text to Myanmar: {row['en_output']}"
 
         question_results: Dict[str, Any] = {
-            "question_index": row.get("id"),
+            "id": row.get("id"),
             "original_output": row.get("en_output"),
             "original_answer": row.get("output"),  # Store original answer for later evaluation
             "formatted_prompt": formatted_prompt,
