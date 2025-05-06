@@ -4,25 +4,10 @@ import argparse
 import pandas as pd
 
 import common
-
-# from .browsecomp_eval import BrowseCompEval
-# from .drop_eval import DropEval
-# from .gpqa_eval import GPQAEval
-# from .humaneval_eval import HumanEval
-# from .math_eval import MathEval
-# from .mgsm_eval import MGSMEval
 from mmlu_eval import MMLUEval
+from exam_eval import ExamEval
 from sampler.litellm_sampler import LitellmSampler
 from sampler.cohere_sampler import CohereSampler
-# from .simpleqa_eval import SimpleQAEval
-# from sampler.chat_completion_sampler import (
-#     OPENAI_SYSTEM_MESSAGE_API,
-#     OPENAI_SYSTEM_MESSAGE_CHATGPT,
-#     ChatCompletionSampler,
-# )
-# from .sampler.o_chat_completion_sampler import OChatCompletionSampler
-# from .sampler.responses_sampler import ResponsesSampler
-# from .sampler.claude_sampler import ClaudeCompletionSampler, CLAUDE_SYSTEM_MESSAGE_LMSYS
 
 
 def main():
@@ -40,37 +25,27 @@ def main():
     parser.add_argument(
         "--language", "-l", type=str, help="Language to use (overrides default)"
     )
+    parser.add_argument(
+        "--evals",
+        "-e",
+        type=str,
+        help="Comma-separated list of evaluations to run (e.g., 'mmlu,exam')",
+    )
 
     args = parser.parse_args()
 
     models = {
-        "deepseek-chat": LitellmSampler(
-            model="openrouter/deepseek/deepseek-chat"
-        ),
-        "gemini-2.0-flash-001": LitellmSampler(
+        "deepseek-chat": LitellmSampler(model="openrouter/deepseek/deepseek-chat"),
+        "gemini-2.0-flash": LitellmSampler(
             model="openrouter/google/gemini-2.0-flash-001"
         ),
-        "gemma-3-4b-it": LitellmSampler(
-            model="openrouter/google/gemma-3-4b-it"
-        ),
-        "gemma-3-12b-it": LitellmSampler(
-            model="openrouter/google/gemma-3-12b-it"
-        ),
-        "gemma-3-27b-it": LitellmSampler(
-            model="openrouter/google/gemma-3-27b-it"
-        ),
-        "c4ai-aya-expanse-8b": CohereSampler(
-            model="c4ai-aya-expanse-8b"
-        ),
-        "c4ai-aya-expanse-32b": CohereSampler(
-            model="c4ai-aya-expanse-32b"
-        ),
-        "command-r7b-12-2024": CohereSampler(
-            model="command-r7b-12-2024"
-        ),
-        "command-r-08-2024": CohereSampler(
-            model="command-r-08-2024"
-        ),
+        "gemma-3-4b-it": LitellmSampler(model="openrouter/google/gemma-3-4b-it"),
+        "gemma-3-12b-it": LitellmSampler(model="openrouter/google/gemma-3-12b-it"),
+        "gemma-3-27b-it": LitellmSampler(model="openrouter/google/gemma-3-27b-it"),
+        "aya-8b": CohereSampler(model="c4ai-aya-expanse-8b"),
+        "aya-32b": CohereSampler(model="c4ai-aya-expanse-32b"),
+        "command-r7b": CohereSampler(model="command-r7b-12-2024"),
+        "command-r": CohereSampler(model="command-r-08-2024"),
     }
 
     if args.list_models:
@@ -102,51 +77,38 @@ def main():
                 return MMLUEval(
                     num_examples=1 if debug_mode else num_examples, language="MYA"
                 )
-            # case "math":
-            #     return MathEval(
-            #         equality_checker=equality_checker,
-            #         num_examples=num_examples,
-            #         n_repeats=1 if debug_mode else 10,
-            #     )
-            # case "gpqa":
-            #     return GPQAEval(
-            #         n_repeats=1 if debug_mode else 10, num_examples=num_examples
-            #     )
-            # case "mgsm":
-            #     return MGSMEval(num_examples_per_lang=10 if debug_mode else 250)
-            # case "drop":
-            #     return DropEval(
-            #         num_examples=10 if debug_mode else num_examples,
-            #         train_samples_per_prompt=3,
-            #     )
-            # case "humaneval":
-            #     return HumanEval(num_examples=10 if debug_mode else num_examples)
-            # case "simpleqa":
-            #     return SimpleQAEval(
-            #         grader_model=grading_sampler,
-            #         num_examples=10 if debug_mode else num_examples,
-            #     )
-            # case "browsecomp":
-            #     return BrowseCompEval(
-            #         grader_model=grading_sampler,
-            #         num_examples=10 if debug_mode else num_examples,
-            #     )
+            case "exam":
+                return ExamEval(
+                    num_examples=1 if debug_mode else num_examples, language="MYA"
+                )
             case _:
                 raise Exception(f"Unrecognized eval type: {eval_name}")
 
-    evals = {
-        eval_name: get_evals(eval_name, args.debug)
-        for eval_name in [
-            # "simpleqa",
-            "mmlu",
-            # "math",
-            # "gpqa",
-            # "mgsm",
-            # "drop",
-            # "humaneval",
-            # "browsecomp",
-        ]
-    }
+    # Define available evaluations
+    available_evals = [
+        "mmlu",
+        "exam",
+    ]
+
+    # Determine which evals to run
+    if args.evals:
+        requested_evals = args.evals.split(",")
+        # Check if all requested evals are valid
+        for eval_name in requested_evals:
+            if eval_name not in available_evals:
+                print(f"Warning: Unrecognized evaluation '{eval_name}'. Skipping.")
+        # Filter to only include valid requested evals
+        eval_names = [e for e in requested_evals if e in available_evals]
+        if not eval_names:
+            print("No valid evaluations specified. Exiting.")
+            return
+    else:
+        # Default to all available evals if none specified
+        eval_names = available_evals
+
+    evals = {eval_name: get_evals(eval_name, args.debug) for eval_name in eval_names}
+
+    print(f"Running evaluations: {', '.join(eval_names)}")
     print(evals)
     debug_suffix = "_DEBUG" if args.debug else ""
     print(debug_suffix)
@@ -162,7 +124,12 @@ def main():
             print(f"Writing report to {report_filename}")
             with open(report_filename, "w", encoding="utf-8") as fh:
                 fh.write(common.make_report(result))
-            metrics = result.metrics | {"score": result.score}
+
+            # Handle the case where result.metrics might be None
+            if result.metrics is not None:
+                metrics = result.metrics | {"score": result.score}
+            else:
+                metrics = {"score": result.score}
 
             print(metrics)
             result_filename = f"{file_stem}{debug_suffix}.json"
@@ -170,6 +137,7 @@ def main():
                 f.write(json.dumps(metrics, indent=2))
             print(f"Writing results to {result_filename}")
             mergekey2resultpath[f"{file_stem}"] = result_filename
+
     merge_metrics = []
     for eval_model_name, result_filename in mergekey2resultpath.items():
         try:
