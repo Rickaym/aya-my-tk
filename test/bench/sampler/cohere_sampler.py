@@ -1,6 +1,7 @@
 import time
 from typing import Optional
 import cohere.client_v2 as cohere
+from cohere.errors import TooManyRequestsError
 
 from models import MessageList, SamplerBase
 
@@ -45,7 +46,7 @@ class CohereSampler(SamplerBase):
                 )
 
                 return response.message.content[0].text
-            except cohere.CohereAPIError as e:
+            except TooManyRequestsError as e:
                 if "rate_limit" in str(e).lower():
                     exception_backoff = 2**trial  # exponential back off
                     print(
