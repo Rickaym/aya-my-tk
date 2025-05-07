@@ -3,7 +3,7 @@ import re
 from typing import Optional
 import pandas
 
-from common import (
+from ayamytk.test.bench.common import (
     HTML_JINJA,
     MULTILINGUAL_ANSWER_REGEXES,
     normalize_extracted_answer,
@@ -13,7 +13,7 @@ from common import (
     QUERY_TEMPLATE_MULTICHOICE,
     jinja_env,
 )
-from models import Eval, EvalResult, SamplerBase, SingleEvalResult
+from ayamytk.test.bench.models import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 QUERY_TEMPLATE_MULTICHOICE_3 = "\n".join(QUERY_TEMPLATE_MULTICHOICE.split("\n")[:-1])
 

@@ -9,7 +9,7 @@ import numpy as np
 import requests
 from tqdm import tqdm
 
-from models import EvalResult, Message, SamplerBase, SingleEvalResult
+from ayamytk.test.bench.models import EvalResult, Message, SamplerBase, SingleEvalResult
 
 QUERY_TEMPLATE_MULTICHOICE = """
 အောက်ပါတို့မှ အဖြေမှန်ကို ရွေးပါ။ သင့်အဖြေ၏ နောက်ဆုံးစာကြောင်းသည် အောက်ပါပုံစံဖြစ်သင့်သည် - 'အဖြေ: $အစဉ်' (ကိုးကားချက်အမှတ်အသား မပါဘဲ) အစဉ် သည် ကခဂဃ တစ်ခုဖြစ်သည်။ အဖြေမပေးခင် အဆင့်ဆင့်စဉ်းစားပါ။

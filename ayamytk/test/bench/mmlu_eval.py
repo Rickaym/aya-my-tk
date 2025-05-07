@@ -7,10 +7,9 @@ https://arxiv.org/abs/2009.03300
 import random
 import re
 from typing import Optional
-import pandas
 from datasets import load_dataset
 
-from common import (
+from ayamytk.test.bench.common import (
     HTML_JINJA,
     MULTILINGUAL_ANSWER_PATTERN_TEMPLATE,
     MULTILINGUAL_ANSWER_REGEXES,
@@ -21,8 +20,8 @@ from common import (
     aggregate_results,
     jinja_env,
 )
-from sampler.litellm_sampler import LitellmSampler
-from models import Eval, EvalResult, SamplerBase, SingleEvalResult
+from ayamytk.test.bench.sampler.litellm_sampler import LitellmSampler
+from ayamytk.test.bench.models import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 subject2category = {
     "abstract_algebra": "stem",

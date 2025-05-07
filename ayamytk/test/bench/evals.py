@@ -3,11 +3,11 @@ import os
 import argparse
 import pandas as pd
 
-import common
-from mmlu_eval import MMLUEval
-from exam_eval import ExamEval
-from sampler.litellm_sampler import LitellmSampler
-from sampler.cohere_sampler import CohereSampler
+from ayamytk.test.bench import common
+from ayamytk.test.bench.mmlu_eval import MMLUEval
+from ayamytk.test.bench.exam_eval import ExamEval
+from ayamytk.test.bench.sampler.litellm_sampler import LitellmSampler
+from ayamytk.test.bench.sampler.cohere_sampler import CohereSampler
 
 
 def main():
@@ -66,11 +66,12 @@ def main():
     # grading_sampler = OpenRouterSampler(model="openrouter/google/gemini-2.0-flash")
     # equality_checker = OpenRouterSampler(model="openrouter/google/gemini-2.0-flash")
     # ^^^ used for fuzzy matching, just for math
+    run(examples=args.examples, debug=args.debug, evals=args.evals, models=models)
 
+
+def run(examples, debug, evals, models):
     def get_evals(eval_name, debug_mode):
-        num_examples = (
-            args.examples if args.examples is not None else (5 if debug_mode else None)
-        )
+        num_examples = examples if examples is not None else (5 if debug_mode else None)
         # Set num_examples = None to reproduce full evals
         match eval_name:
             case "mmlu":
@@ -91,8 +92,8 @@ def main():
     ]
 
     # Determine which evals to run
-    if args.evals:
-        requested_evals = args.evals.split(",")
+    if evals:
+        requested_evals = evals.split(",")
         # Check if all requested evals are valid
         for eval_name in requested_evals:
             if eval_name not in available_evals:
@@ -106,11 +107,11 @@ def main():
         # Default to all available evals if none specified
         eval_names = available_evals
 
-    evals = {eval_name: get_evals(eval_name, args.debug) for eval_name in eval_names}
+    evals = {eval_name: get_evals(eval_name, debug) for eval_name in eval_names}
 
     print(f"Running evaluations: {', '.join(eval_names)}")
     print(evals)
-    debug_suffix = "_DEBUG" if args.debug else ""
+    debug_suffix = "_DEBUG" if debug else ""
     print(debug_suffix)
     mergekey2resultpath = {}
     for model_name, sampler in models.items():
