@@ -1,5 +1,6 @@
 import time
 from typing import Callable
+from traceback import print_exc
 from ayamytk.test.bench.models import MessageList, SamplerBase
 
 
@@ -24,8 +25,8 @@ class CustomSampler(SamplerBase):
                 exception_backoff = 2**trial  # exponential back off
                 print(
                     f"Exception so wait and retry {trial} after {exception_backoff} sec",
-                    e,
                 )
+                print_exc()
                 time.sleep(exception_backoff)
                 trial += 1
                 # unknown error shall throw exception
