@@ -10,7 +10,7 @@ from ayamytk.test.bench.sampler.litellm_sampler import LitellmSampler
 from ayamytk.test.bench.sampler.cohere_sampler import CohereSampler
 
 
-models = {
+MODELS = {
     "deepseek-chat": LitellmSampler(model="openrouter/deepseek/deepseek-chat"),
     "gemini-2.0-flash": LitellmSampler(
         model="openrouter/google/gemini-2.0-flash-001"
@@ -50,26 +50,28 @@ def main():
 
     if args.list_models:
         print("Available models:")
-        for model_name in models.keys():
+        for model_name in MODELS.keys():
             print(f" - {model_name}")
         return
 
     if args.model:
         if args.model == "all":
-            models = models
-        elif args.model not in models:
+            models = MODELS
+        elif args.model not in MODELS:
             print(f"Error: Model '{args.model}' not found.")
             return
         else:
-            models = {args.model: models[args.model]}
+            models = {args.model: MODELS[args.model]}
+    else:
+        models = MODELS
 
     # grading_sampler = OpenRouterSampler(model="openrouter/google/gemini-2.0-flash")
     # equality_checker = OpenRouterSampler(model="openrouter/google/gemini-2.0-flash")
     # ^^^ used for fuzzy matching, just for math
-    run(examples=args.examples, debug=args.debug, evals=args.evals, models=models)
+    run(examples=args.examples, debug=args.debug, evals=args.evals, run_models=models)
 
 
-def run(examples=None, debug=False, evals="mmlu,exam", models=None):
+def run(examples=None, debug=False, evals="mmlu,exam", run_models=MODELS):
     def get_evals(eval_name, debug_mode):
         num_examples = examples if examples is not None else (5 if debug_mode else None)
         # Set num_examples = None to reproduce full evals
@@ -114,7 +116,7 @@ def run(examples=None, debug=False, evals="mmlu,exam", models=None):
     debug_suffix = "_DEBUG" if debug else ""
     print(debug_suffix)
     mergekey2resultpath = {}
-    for model_name, sampler in models.items():
+    for model_name, sampler in run_models.items():
         for eval_name, eval_obj in evals.items():
             result = eval_obj(sampler)
             # ^^^ how to use a sampler
