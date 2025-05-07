@@ -10,6 +10,20 @@ from ayamytk.test.bench.sampler.litellm_sampler import LitellmSampler
 from ayamytk.test.bench.sampler.cohere_sampler import CohereSampler
 
 
+models = {
+    "deepseek-chat": LitellmSampler(model="openrouter/deepseek/deepseek-chat"),
+    "gemini-2.0-flash": LitellmSampler(
+        model="openrouter/google/gemini-2.0-flash-001"
+    ),
+    "gemma-3-4b-it": LitellmSampler(model="openrouter/google/gemma-3-4b-it"),
+    "gemma-3-12b-it": LitellmSampler(model="openrouter/google/gemma-3-12b-it"),
+    "gemma-3-27b-it": LitellmSampler(model="openrouter/google/gemma-3-27b-it"),
+    "aya-8b": CohereSampler(model="c4ai-aya-expanse-8b"),
+    "aya-32b": CohereSampler(model="c4ai-aya-expanse-32b"),
+    "command-r7b": CohereSampler(model="command-r7b-12-2024"),
+    "command-r": CohereSampler(model="command-r-08-2024"),
+}
+
 def main():
     parser = argparse.ArgumentParser(
         description="Run sampling and evaluations using different samplers and evaluations."
@@ -33,20 +47,6 @@ def main():
     )
 
     args = parser.parse_args()
-
-    models = {
-        "deepseek-chat": LitellmSampler(model="openrouter/deepseek/deepseek-chat"),
-        "gemini-2.0-flash": LitellmSampler(
-            model="openrouter/google/gemini-2.0-flash-001"
-        ),
-        "gemma-3-4b-it": LitellmSampler(model="openrouter/google/gemma-3-4b-it"),
-        "gemma-3-12b-it": LitellmSampler(model="openrouter/google/gemma-3-12b-it"),
-        "gemma-3-27b-it": LitellmSampler(model="openrouter/google/gemma-3-27b-it"),
-        "aya-8b": CohereSampler(model="c4ai-aya-expanse-8b"),
-        "aya-32b": CohereSampler(model="c4ai-aya-expanse-32b"),
-        "command-r7b": CohereSampler(model="command-r7b-12-2024"),
-        "command-r": CohereSampler(model="command-r-08-2024"),
-    }
 
     if args.list_models:
         print("Available models:")
