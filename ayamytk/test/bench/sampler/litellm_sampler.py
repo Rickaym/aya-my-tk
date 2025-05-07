@@ -1,7 +1,7 @@
 import time
 from typing import Optional
 import litellm
-from models import MessageList, SamplerBase
+from ayamytk.test.bench.models import MessageList, SamplerBase
 
 class LitellmSampler(SamplerBase):
     """

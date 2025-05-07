@@ -69,7 +69,7 @@ def main():
     run(examples=args.examples, debug=args.debug, evals=args.evals, models=models)
 
 
-def run(examples, debug, evals, models):
+def run(examples=None, debug=False, evals="mmlu,exam", models=None):
     def get_evals(eval_name, debug_mode):
         num_examples = examples if examples is not None else (5 if debug_mode else None)
         # Set num_examples = None to reproduce full evals
