@@ -1,7 +1,7 @@
 import time
 import cohere.client_v2 as cohere
 from typing import Optional
-from models import MessageList, SamplerBase
+from ayamytk.test.bench.models import MessageList, SamplerBase
 
 
 class CohereSampler(SamplerBase):
