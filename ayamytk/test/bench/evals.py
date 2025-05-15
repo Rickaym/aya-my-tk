@@ -98,6 +98,7 @@ def main():
 
 
 def run(
+    sampler=None,
     examples=None,
     debug=False,
     evals=evals_default,
@@ -125,6 +126,9 @@ def run(
         "mmlu",
         "exam",
     ]
+
+    if sampler:
+        run_models = {sampler.__name__: sampler}
 
     # Determine which evals to run
     if evals:
