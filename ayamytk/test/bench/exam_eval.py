@@ -65,10 +65,14 @@ def format_question(row):
         return TRUE_FALSE_TEMPLATE.format(**row)
     elif row["type"] == "FIB":
         return FILL_IN_BLANK_TEMPLATE.format(**row)
-    elif row["type"] == "SHORT_QNA":
+    elif (
+        row["type"] == "SHORT_QNA"
+        or row["type"] == "LONG_QNA"
+        or row["type"] == "METAPHOR_QNA"
+    ):
         return SHORT_QNA_TEMPLATE.format(**row)
     else:
-        raise ValueError(f"Unknown question type: {row['Type']}")
+        raise ValueError(f"Unknown question type: {row['type']}")
 
 
 # Prompt template for evaluating Burmese questions and responses
