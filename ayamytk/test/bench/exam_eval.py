@@ -6,17 +6,29 @@ from datasets import load_dataset
 
 from ayamytk.test.bench.common import (
     HTML_JINJA,
-    MULTILINGUAL_ANSWER_REGEXES,
     normalize_extracted_answer,
     normalize_response,
     map_with_progress,
     aggregate_results,
-    QUERY_TEMPLATE_MULTICHOICE,
     jinja_env,
 )
-from ayamytk.test.bench.models import Eval, EvalResult, SamplerBase, SingleEvalResult, EvalResult
+from ayamytk.test.bench.models import (
+    Eval,
+    EvalResult,
+    SamplerBase,
+    SingleEvalResult,
+    EvalResult,
+)
 
-QUERY_TEMPLATE_MULTICHOICE_3 = "\n".join(QUERY_TEMPLATE_MULTICHOICE.split("\n")[:-1])
+QUERY_TEMPLATE_MULTICHOICE_3 = """
+အောက်ပါတို့မှ အဖြေမှန်ကို ရွေးပါ။ သင့်အဖြေ၏ နောက်ဆုံးစာကြောင်းသည် အောက်ပါပုံစံဖြစ်သင့်သည် - 'အဖြေ: $အစဉ်' (ကိုးကားချက်အမှတ်အသား မပါဘဲ) အစဉ် သည် ကခဂ တစ်ခုဖြစ်သည်။ အဖြေမပေးခင် အဆင့်ဆင့်စဉ်းစားပါ။
+
+{question}
+
+(က) {option_a}
+(ခ) {option_b}
+(ဂ) {option_c}
+""".strip()
 
 MULTILINGUAL_ANSWER_PATTERN_TEMPLATE = (
     "(?i){head}[ \t]*(?:\\()?([က-ဃ]|[က]|[ခ]|[ဂ]|[ဃ]|{answer})(?:\\))?"
@@ -103,8 +115,15 @@ Grammatical and Syntactic Competence: <1-5>
 
 ANSWER_REGEX = "အဖြေ\\s*:(?:\\n{0,2})?"
 
+
 class ExamEval(Eval):
-    def __init__(self, grader_model, num_examples: Optional[int] = None, language: str = "EN-US", filter_type=None):
+    def __init__(
+        self,
+        grader_model,
+        num_examples: Optional[int] = None,
+        language: str = "EN-US",
+        filter_type=None,
+    ):
         if language != "MYA":
             raise ValueError(f"Language {language} not supported")
 
@@ -136,7 +155,9 @@ class ExamEval(Eval):
         # Use regex to extract scores for each criterion
         content_match = re.search(r"Content Relevancy:\s*(\d+)", grade_output)
         register_match = re.search(r"Register Appropriateness:\s*(\d+)", grade_output)
-        grammar_match = re.search(r"Grammatical and Syntactic Competence:\s*(\d+)", grade_output)
+        grammar_match = re.search(
+            r"Grammatical and Syntactic Competence:\s*(\d+)", grade_output
+        )
 
         # Extract values if matches found
         if content_match:
@@ -185,7 +206,7 @@ class ExamEval(Eval):
                     "SHORT_QNA": score,
                     "Content Relevancy": content_score,
                     "Register Appropriateness": register_score,
-                    "Grammatical and Syntactic Competence": grammar_score
+                    "Grammatical and Syntactic Competence": grammar_score,
                 }
 
                 # No extracted answer for SHORT_QNA
