@@ -118,21 +118,20 @@ def run(
     def get_evals(eval_name, debug_mode):
         num_examples = examples if examples is not None else (5 if debug_mode else None)
         # Set num_examples = None to reproduce full evals
-        match eval_name:
-            case "mmlu":
-                return MMLUEval(
-                    num_examples=1 if debug_mode else num_examples, language=language
-                )
-            case "exam":
-                return ExamEval(
-                    grader_model=OpenRouterSampler(
-                        model="google/gemini-2.0-flash-001"
-                    ),
-                    num_examples=1 if debug_mode else num_examples,
-                    language=language,
-                )
-            case _:
-                raise Exception(f"Unrecognized eval type: {eval_name}")
+        if eval_name == "mmlu":
+            return MMLUEval(
+                num_examples=1 if debug_mode else num_examples, language=language
+            )
+        elif eval_name == "exam":
+            return ExamEval(
+                grader_model=OpenRouterSampler(
+                    model="google/gemini-2.0-flash-001"
+                ),
+                num_examples=1 if debug_mode else num_examples,
+                language=language,
+            )
+        else:
+            raise Exception(f"Unrecognized eval type: {eval_name}")
 
     # Define available evaluations
     available_evals = [

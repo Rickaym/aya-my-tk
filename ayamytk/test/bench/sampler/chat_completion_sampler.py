@@ -18,7 +18,7 @@ class ChatCompletionSampler(SamplerBase):
         model: str = "gpt-3.5-turbo",
         base_url: Optional[str] = None,
         api_key_name: str = "OPENAI_API_KEY",
-        system_message: str | None = None,
+        system_message: Optional[str] = None,
         temperature: float = 0.5,
         max_tokens: int = 1024,
     ):
