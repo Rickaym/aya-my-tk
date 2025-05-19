@@ -12,7 +12,7 @@ This toolkit is developed for evaluating language models, and synthetic data gen
 |--------------|------|------------|
 | [Myanmar G12L Benchmark](https://huggingface.co/datasets/Rickaym/Myanmar-G12L-Benchmark) | 962 | multiple-choice, true-false, short-answer, fill-in-the-blank, long-answer |
 | [MMLU Lite](https://huggingface.co/datasets/Rickaym/Burmese-MMLU-Lite) | 600 | multiple-choice  |
-| Driving and Riding Theory Test (Myanmar) | 200 | multiple-choice  |
+| Driving and Riding Theory Test | 200 | multiple-choice  |
 | [Belebele](https://huggingface.co/datasets/facebook/belebele/viewer/mya_Mymr?row=0&views%5B%5D=mya_mymr) | 900 | multiple-choice |
 
 
@@ -26,7 +26,6 @@ Coming soon
 |--------------|------|------------|
 | [Wikipedia](https://huggingface.co/datasets/wikimedia/wikipedia) | 109k | 24B |
 | Myanmar Instructions 67k | 67k | - |
-| [Alpaca Burmese Cleaned](https://huggingface.co/datasets/saillab/alpaca-myanmar_burmese-cleaned) | 52k | 2M |
 | [OSCAR-2019-Burmese-fix](https://huggingface.co/datasets/5w4n/OSCAR-2019-Burmese-fix) | 140k | - |
 | [Myanmar Dictionary](https://huggingface.co/datasets/Rickaym/Burmese-Dictionary) | - | 220k |
 | Public School Text Books | - | 680k |
