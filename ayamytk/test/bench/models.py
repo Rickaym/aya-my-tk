@@ -5,15 +5,28 @@ Message = dict[str, Any]  # keys role, content
 MessageList = list[Message]
 
 
+@dataclass
+class SamplerResponse:
+    """
+    Response from a sampler.
+    """
+
+    response_text: str
+    actual_queried_message_list: MessageList
+    response_metadata: dict[str, Any]
+
+
 class SamplerBase:
     """
     Base class for defining a sampling model, which can be evaluated,
     or used as part of the grading process.
     """
 
-    def __call__(self, message_list: MessageList) -> str:
+    def __call__(self, message_list: MessageList) -> SamplerResponse:
         raise NotImplementedError
 
+    def _pack_message(self, role, content):
+        raise NotImplementedError
 
 @dataclass
 class EvalResult:

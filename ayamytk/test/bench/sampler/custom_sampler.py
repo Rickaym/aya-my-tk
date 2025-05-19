@@ -1,7 +1,7 @@
 import time
 from typing import Callable
 from traceback import print_exc
-from ayamytk.test.bench.models import MessageList, SamplerBase
+from ayamytk.test.bench.models import MessageList, SamplerBase, SamplerResponse
 
 
 class CustomSampler(SamplerBase):
@@ -15,12 +15,16 @@ class CustomSampler(SamplerBase):
     def _pack_message(self, role, content):
         return {"role": str(role), "content": content}
 
-    def __call__(self, message_list: MessageList) -> str:
+    def __call__(self, message_list: MessageList) -> SamplerResponse:
         trial = 0
         while True:
             try:
                 response = self.chat(message_list)
-                return response
+                return SamplerResponse(
+                    response_text=response,
+                    actual_queried_message_list=message_list,
+                    response_metadata={},
+                )
             except Exception as e:
                 exception_backoff = 2**trial  # exponential back off
                 print(

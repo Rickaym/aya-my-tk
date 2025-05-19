@@ -1,7 +1,7 @@
 import time
 import cohere.client_v2 as cohere
 from typing import Optional
-from ayamytk.test.bench.models import MessageList, SamplerBase
+from ayamytk.test.bench.models import MessageList, SamplerBase, SamplerResponse
 
 
 class CohereSampler(SamplerBase):
@@ -25,7 +25,7 @@ class CohereSampler(SamplerBase):
     def _pack_message(self, role, content):
         return {"role": str(role), "content": content}
 
-    def __call__(self, message_list: MessageList) -> str:
+    def __call__(self, message_list: MessageList) -> SamplerResponse:
         trial = 0
         while True:
             try:
@@ -43,7 +43,11 @@ class CohereSampler(SamplerBase):
                     temperature=self.temperature,
                 )
 
-                return response.message.content[0].text
+                return SamplerResponse(
+                    response_text=response.message.content[0].text,
+                    actual_queried_message_list=message_list,
+                    response_metadata={},
+                )
             except Exception as e:
                 exception_backoff = 2**trial  # exponential back off
                 print(

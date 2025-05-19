@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 from multiprocessing.pool import ThreadPool
-from typing import Any, Optional
+from typing import Any, Optional, Callable
 
 import io
 import jinja2
@@ -88,7 +88,7 @@ HTML_JINJA = """
 
 def check_equality(sampler: SamplerBase, expr1: str, expr2: str):
     prompt = EQUALITY_TEMPLATE % {"expression1": expr1, "expression2": expr2}
-    response = sampler([dict(content=prompt, role="user")])
+    response = sampler([dict(content=prompt, role="user")]).response_text
     return response.lower().strip() == "yes"
 
 
@@ -107,7 +107,7 @@ def _compute_stat(values: list, stat: str):
 
 def aggregate_results(
     single_eval_results: list[SingleEvalResult],
-    default_stats: tuple[str] = ("mean", "std"),
+    default_stats: tuple[str, str] = ("mean", "std"),
     name2stats: Optional[dict[str, tuple[str]]] = None,
 ) -> EvalResult:
     """
@@ -131,11 +131,14 @@ def aggregate_results(
             key = name if stat == "mean" else f"{name}:{stat}"
             final_metrics[key] = _compute_stat(values, stat)
     return EvalResult(
-        score=final_metrics.pop("score", None), metrics=final_metrics, htmls=htmls, convos=convos
+        score=final_metrics.pop("score", None),
+        metrics=final_metrics,
+        htmls=htmls,
+        convos=convos,
     )
 
 
-def map_with_progress(f: callable, xs: list[Any], num_threads: int = 50):
+def map_with_progress(f: Callable, xs: list[Any], num_threads: int = 50):
     """
     Apply f to each element of xs, using a ThreadPool, and show progress.
     """
@@ -169,7 +172,9 @@ def message_to_html(message: Message) -> str:
     Generate HTML snippet (inside a <div>) for a message.
     """
     return jinja_env.from_string(_message_template).render(
-        role=message["role"], content=message["content"], variant=message.get("variant", None)
+        role=message["role"],
+        content=message["content"],
+        variant=message.get("variant", None),
     )
 
 
@@ -257,7 +262,10 @@ def make_report_from_example_htmls(htmls: list[str]):
     """
     Create a standalone HTML report from a list of example htmls
     """
-    return jinja_env.from_string(_report_template).render(score=None, metrics={}, htmls=htmls)
+    return jinja_env.from_string(_report_template).render(
+        score=None, metrics={}, htmls=htmls
+    )
+
 
 def normalize_response(response: str) -> str:
     """
@@ -279,6 +287,7 @@ def normalize_response(response: str) -> str:
         .replace("{", "")
         .replace("\\boxed", "")
     )
+
 
 def normalize_extracted_answer(extracted_answer: str) -> str:
     return (

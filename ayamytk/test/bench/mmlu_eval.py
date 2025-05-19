@@ -17,7 +17,6 @@ from ayamytk.test.bench.common import (
     aggregate_results,
     jinja_env,
 )
-from ayamytk.test.bench.sampler.litellm_sampler import LitellmSampler
 from ayamytk.test.bench.models import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 subject2category = {
@@ -124,7 +123,7 @@ class MMLUEval(Eval):
                     content=format_multichoice_question(row), role="user"
                 )
             ]
-            response_text = normalize_response(sampler(p္rompt_messages))
+            response_text = normalize_response(sampler(prompt_messages).response_text)
             extracted_answer = None
             for answer_regex in MULTILINGUAL_ANSWER_REGEXES:
                 regex = MULTILINGUAL_ANSWER_PATTERN_TEMPLATE.format(answer_regex)
@@ -150,8 +149,3 @@ class MMLUEval(Eval):
 
         results = map_with_progress(fn, self.examples)
         return aggregate_results(results)
-
-
-if __name__ == "__main__":
-    evaluator = MMLUEval(num_examples=1, language="MYA")
-    evaluator(LitellmSampler(model="openrouter/google/gemma-3-12b-it"))

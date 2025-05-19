@@ -193,7 +193,7 @@ class ExamEval(Eval):
             prompt_messages = [
                 sampler._pack_message(content=format_question(row), role="user")
             ]
-            response_text = normalize_response(sampler(prompt_messages))
+            response_text = normalize_response(sampler(prompt_messages).response_text)
             extracted_answer = None
 
             if row["type"] == "SHORT_QNA":
