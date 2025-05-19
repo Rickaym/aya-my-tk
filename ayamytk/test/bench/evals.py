@@ -5,12 +5,12 @@ import pandas as pd
 
 import sys
 
-sys.path.append(os.path.abspath('.'))
+sys.path.append(os.path.abspath("."))
 
 from ayamytk.test.bench import common
 from ayamytk.test.bench.mmlu_eval import MMLUEval
 from ayamytk.test.bench.exam_eval import ExamEval
-from ayamytk.test.bench.sampler.litellm_sampler import LitellmSampler
+from ayamytk.test.bench.sampler.chat_completion_sampler import ChatCompletionSampler
 from ayamytk.test.bench.sampler.cohere_sampler import CohereSampler
 
 
@@ -18,22 +18,32 @@ evals_default = "mmlu,exam"
 models_default = "all"
 language_default = "MYA"
 
+OpenRouterSampler = lambda model: ChatCompletionSampler(
+    model=model,
+    base_url="https://openrouter.ai/api/v1",
+    api_key_name="OPENROUTER_API_KEY",
+)
+
 MODELS = {
-    # "deepseek-chat": LitellmSampler(model="openrouter/deepseek/deepseek-chat"),
-    # "gemini-2.0-flash": LitellmSampler(model="openrouter/google/gemini-2.0-flash-001"),
-    # "gemma-3-4b-it": LitellmSampler(model="openrouter/google/gemma-3-4b-it"),
-    # "gemma-3-12b-it": LitellmSampler(model="openrouter/google/gemma-3-12b-it"),
-    # "gemma-3-27b-it": LitellmSampler(model="openrouter/google/gemma-3-27b-it"),
-    # "aya-8b": CohereSampler(model="c4ai-aya-expanse-8b"),
-    # "aya-32b": CohereSampler(model="c4ai-aya-expanse-32b"),
-    # "command-r7b": CohereSampler(model="command-r7b-12-2024"),
-    # "command-r": CohereSampler(model="command-r-08-2024"),
-    # "command-a": CohereSampler(model="command-a-03-2025"),
-    # "gpt-4o": LitellmSampler(model="gpt-4o"),
-    # "claude-3.7-sonnet": LitellmSampler(model="openrouter/anthropic/claude-3.7-sonnet"),
-    # "claude-3-haiku": LitellmSampler(model="openrouter/anthropic/claude-3-haiku"),
-    # "qwen-2.5-7b": LitellmSampler(model="openrouter/qwen/qwen-2.5-7b-instruct"),
-    "qwen-2.5-72b": LitellmSampler(model="openrouter/qwen/qwen-2.5-72b-instruct")
+    "deepseek-chat": OpenRouterSampler(model="deepseek/deepseek-chat"),
+    "gemini-2.0-flash": OpenRouterSampler(
+        model="google/gemini-2.0-flash-001"
+    ),
+    "gemma-3-4b-it": OpenRouterSampler(model="google/gemma-3-4b-it"),
+    "gemma-3-12b-it": OpenRouterSampler(model="google/gemma-3-12b-it"),
+    "gemma-3-27b-it": OpenRouterSampler(model="google/gemma-3-27b-it"),
+    "aya-8b": CohereSampler(model="c4ai-aya-expanse-8b"),
+    "aya-32b": CohereSampler(model="c4ai-aya-expanse-32b"),
+    "command-r7b": CohereSampler(model="command-r7b-12-2024"),
+    "command-r": CohereSampler(model="command-r-08-2024"),
+    "command-a": CohereSampler(model="command-a-03-2025"),
+    "gpt-4o": ChatCompletionSampler(model="gpt-4o"),
+    "claude-3.7-sonnet": OpenRouterSampler(
+        model="anthropic/claude-3.7-sonnet"
+    ),
+    "claude-3-haiku": OpenRouterSampler(model="anthropic/claude-3-haiku"),
+    "qwen-2.5-7b": OpenRouterSampler(model="qwen/qwen-2.5-7b-instruct"),
+    "qwen-2.5-72b": OpenRouterSampler(model="qwen/qwen-2.5-72b-instruct"),
 }
 
 
@@ -85,8 +95,8 @@ def main():
     else:
         models = MODELS
 
-    # grading_sampler = OpenRouterSampler(model="openrouter/google/gemini-2.0-flash")
-    # equality_checker = OpenRouterSampler(model="openrouter/google/gemini-2.0-flash")
+    # grading_sampler = OpenRouterSampler(model="google/gemini-2.0-flash")
+    # equality_checker = OpenRouterSampler(model="google/gemini-2.0-flash")
     # ^^^ used for fuzzy matching, just for math
     run(
         examples=args.examples,
@@ -115,8 +125,11 @@ def run(
                 )
             case "exam":
                 return ExamEval(
-                    grader_model=LitellmSampler(model="openrouter/google/gemini-2.0-flash-001"),
-                    num_examples=1 if debug_mode else num_examples, language=language
+                    grader_model=OpenRouterSampler(
+                        model="google/gemini-2.0-flash-001"
+                    ),
+                    num_examples=1 if debug_mode else num_examples,
+                    language=language,
                 )
             case _:
                 raise Exception(f"Unrecognized eval type: {eval_name}")
