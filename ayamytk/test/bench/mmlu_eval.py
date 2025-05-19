@@ -89,8 +89,7 @@ class MMLUEval(Eval):
         if language != "MYA":
             raise ValueError("Language must be MYA")
 
-        df = load_dataset("Rickaym/Myanmar_Burmese-MMLU-Lite", split="test")
-
+        df = load_dataset("Rickaym/Burmese-MMLU-Lite", split="test")
         examples = list(df)
         if num_examples:
             examples = random.Random(0).sample(examples, num_examples)
