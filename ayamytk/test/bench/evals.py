@@ -13,7 +13,7 @@ from ayamytk.test.bench.exam_eval import ExamEval
 from ayamytk.test.bench.sampler.open_router_sampler import OpenRouterSampler
 
 
-evals_default = "mmlu,exam"
+evals_default = "mmlu_lite,mg12l"
 models_default = "all"
 language_default = "MYA"
 
@@ -65,7 +65,7 @@ def main():
         "--evals",
         "-e",
         type=str,
-        help="Comma-separated list of evaluations to run (e.g., 'mmlu,exam')",
+        help="Comma-separated list of evaluations to run (e.g., 'mmlu_lite,mg12l')",
         default=evals_default,
     )
 
@@ -111,11 +111,11 @@ def run(
     def get_evals(eval_name, debug_mode):
         num_examples = examples if examples is not None else (5 if debug_mode else None)
         # Set num_examples = None to reproduce full evals
-        if eval_name == "mmlu":
+        if eval_name == "mmlu_lite":
             return MMLUEval(
                 num_examples=1 if debug_mode else num_examples, language=language
             )
-        elif eval_name == "exam":
+        elif eval_name == "mg12l":
             return ExamEval(
                 grader_model=OpenRouterSampler(
                     model="google/gemini-2.0-flash-001"
@@ -128,7 +128,7 @@ def run(
 
     # Define available evaluations
     available_evals = [
-        "mmlu",
+        "mmlu_lite",
         "exam",
     ]
 
