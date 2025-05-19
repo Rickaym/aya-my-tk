@@ -92,7 +92,7 @@ def main():
         examples=args.examples,
         debug=args.debug,
         evals=args.evals,
-        run_models=models,
+        samplers=models,
         language=args.language,
     )
 
@@ -102,7 +102,7 @@ def run(
     examples=None,
     debug=False,
     evals=evals_default,
-    run_models=MODELS,
+    samplers=MODELS,
     language=language_default,
 ):
     def get_evals(eval_name, debug_mode):
@@ -128,7 +128,7 @@ def run(
     ]
 
     if sampler:
-        run_models = {sampler.__name__: sampler}
+        samplers = {sampler.__name__: sampler}
 
     # Determine which evals to run
     if evals:
@@ -153,7 +153,7 @@ def run(
     debug_suffix = "_DEBUG" if debug else ""
     print(debug_suffix)
     mergekey2resultpath = {}
-    for model_name, sampler in run_models.items():
+    for model_name, sampler in samplers.items():
         for eval_name, eval_obj in evals.items():
             result = eval_obj(sampler)
             # ^^^ how to use a sampler
