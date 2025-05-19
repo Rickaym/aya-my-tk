@@ -10,7 +10,7 @@ sys.path.append(os.path.abspath("."))
 from ayamytk.test.bench import common
 from ayamytk.test.bench.mmlu_eval import MMLUEval
 from ayamytk.test.bench.exam_eval import ExamEval
-from ayamytk.test.bench.sampler.open_router_sampler import OpenRouterSampler
+from ayamytk.test.bench.sampler import OpenRouterSampler
 
 
 evals_default = "mmlu_lite,mg12l"
