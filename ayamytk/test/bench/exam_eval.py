@@ -231,7 +231,10 @@ class ExamEval(Eval):
 
                 match = re.search(regex, response_text)
                 if match:
-                    extracted_answer = match.group(1)
+                    try:
+                        extracted_answer = match.group(1)
+                    except IndexError:
+                        pass
 
                 if row["type"] == "MCQ" and extracted_answer:
                     extracted_answer = normalize_extracted_answer(extracted_answer)
