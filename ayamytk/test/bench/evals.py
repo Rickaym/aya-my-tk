@@ -127,10 +127,7 @@ def run(
             raise Exception(f"Unrecognized eval type: {eval_name}")
 
     # Define available evaluations
-    available_evals = [
-        "mmlu_lite",
-        "exam",
-    ]
+    available_evals = evals_default.split(",")
 
     if sampler:
         samplers = {sampler.__name__: sampler}
