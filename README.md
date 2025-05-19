@@ -10,8 +10,8 @@ This toolkit is developed for evaluating language models, and synthetic data gen
 
 | Benchmark Name | Questions | Types |
 |--------------|------|------------|
-| Matriculation Exam | 904 | multiple-choice, true-false, short-answer, fill-in-the-blank, long-answer |
-| MMLU Lite | 600 | multiple-choice  |
+| [Myanmar G12L Benchmark](https://huggingface.co/datasets/Rickaym/Myanmar-G12L-Benchmark) | 962 | multiple-choice, true-false, short-answer, fill-in-the-blank, long-answer |
+| [MMLU Lite](https://huggingface.co/datasets/Rickaym/Burmese-MMLU-Lite) | 600 | multiple-choice  |
 | Driving and Riding Theory Test (Myanmar) | 200 | multiple-choice  |
 | [Belebele](https://huggingface.co/datasets/facebook/belebele/viewer/mya_Mymr?row=0&views%5B%5D=mya_mymr) | 900 | multiple-choice |
 
