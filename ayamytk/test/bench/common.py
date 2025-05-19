@@ -11,28 +11,6 @@ from tqdm import tqdm
 
 from ayamytk.test.bench.models import EvalResult, Message, SamplerBase, SingleEvalResult
 
-QUERY_TEMPLATE_MULTICHOICE = """
-အောက်ပါတို့မှ အဖြေမှန်ကို ရွေးပါ။ သင့်အဖြေ၏ နောက်ဆုံးစာကြောင်းသည် အောက်ပါပုံစံဖြစ်သင့်သည် - 'အဖြေ: $အစဉ်' (ကိုးကားချက်အမှတ်အသား မပါဘဲ) အစဉ် သည် ကခဂဃ တစ်ခုဖြစ်သည်။ အဖြေမပေးခင် အဆင့်ဆင့်စဉ်းစားပါ။
-
-{question}
-
-(က) {option_a}
-(ခ) {option_b}
-(ဂ) {option_c}
-(ဃ) {option_d}
-""".strip()
-
-ANSWER_PATTERN_MULTICHOICE = r"(?i)Answer[ \t]*:[ \t]*\$?([A-D])\$?"
-ANSWER_PATTERN = r"(?i)Answer\s*:\s*([^\n]+)"
-MULTILINGUAL_ANSWER_PATTERN_TEMPLATE = (
-    "(?i){}[ \t]*(?:\\()?([က-ဃ]|[က]|[ခ]|[ဂ]|[ဃ])(?:\\))?"
-)
-# All the different ways "Answer" is written in different languages
-MULTILINGUAL_ANSWER_REGEXES = [
-    "အဖြေ\\s*:(?:\\n{0,2})?",
-]
-
-
 EQUALITY_TEMPLATE = r"""
 Look at the following two expressions (answers to a math problem) and judge whether they are equivalent. Only perform trivial simplifications
 
@@ -106,10 +84,6 @@ HTML_JINJA = """
 <p>Extracted Answer: {{ extracted_answer }}</p>
 <p>Score: {{ score }}</p>
 """
-
-
-def format_multichoice_question(row):
-    return QUERY_TEMPLATE_MULTICHOICE.format(**row)
 
 
 def check_equality(sampler: SamplerBase, expr1: str, expr2: str):
@@ -308,22 +282,7 @@ def normalize_response(response: str) -> str:
 
 def normalize_extracted_answer(extracted_answer: str) -> str:
     return (
-        # In arabic these are the letters used for A-D in multiple choice questions
         extracted_answer
-        # .replace("أ", " A")
-        # .replace("ب", " B")
-        # .replace("ج", " C")
-        # .replace("د", " D")
-        # # In Bengali these are the letters used for A-D in multiple choice questions
-        # .replace("অ", " A")
-        # .replace("ব", " B")
-        # .replace("ড", " C")
-        # .replace("ঢ", " D")
-        # # In Japanese these are the letters sometimes used for A-D in multiple choice questions
-        # .replace("Ａ", " A")
-        # .replace("Ｂ", " B")
-        # .replace("Ｃ", " C")
-        # .replace("Ｄ", " D")
         # In Myanmar these are the letters used for A-D in multiple choice questions
         .replace("က", " A")
         .replace("ခ", " B")

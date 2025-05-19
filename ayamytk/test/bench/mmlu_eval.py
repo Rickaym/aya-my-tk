@@ -11,9 +11,6 @@ from datasets import load_dataset
 
 from ayamytk.test.bench.common import (
     HTML_JINJA,
-    MULTILINGUAL_ANSWER_PATTERN_TEMPLATE,
-    MULTILINGUAL_ANSWER_REGEXES,
-    format_multichoice_question,
     normalize_extracted_answer,
     normalize_response,
     map_with_progress,
@@ -83,6 +80,31 @@ subject2category = {
     "world_religions": "humanities",
 }
 
+QUERY_TEMPLATE_MULTICHOICE = """
+အောက်ပါ မေးခွန်းအတွက် အဖြေမှန်ကို ရွေးပါ။ သင့်အဖြေ၏ နောက်ဆုံးစာကြောင်းသည် 'အဖြေ: $အစဉ်' (ဥပမာ- 'အဖြေ: က') ဖြစ်ရမည်။ $အစဉ် သည် (က၊ ခ၊ ဂ၊ ဃ) တစ်ခုဖြစ်ရမည်။ အဖြေမပေးမီ အဆင့်ဆင့်စဉ်းစားပြီး ရွေးချယ်ပါ။
+
+{question}
+
+(က) {option_a}
+(ခ) {option_b}
+(ဂ) {option_c}
+(ဃ) {option_d}
+""".strip()
+
+ANSWER_PATTERN_MULTICHOICE = r"(?i)Answer[ \t]*:[ \t]*\$?([A-D])\$?"
+ANSWER_PATTERN = r"(?i)Answer\s*:\s*([^\n]+)"
+MULTILINGUAL_ANSWER_PATTERN_TEMPLATE = (
+    "(?i){}[ \t]*(?:\\()?([က-ဃ]|[က]|[ခ]|[ဂ]|[ဃ])(?:\\))?"
+)
+# All the different ways "Answer" is written in different languages
+MULTILINGUAL_ANSWER_REGEXES = [
+    "အဖြေ\\s*:(?:\\n{0,2})?",
+]
+
+
+def format_multichoice_question(row):
+    return QUERY_TEMPLATE_MULTICHOICE.format(**row)
+
 
 class MMLUEval(Eval):
     def __init__(self, num_examples: Optional[int] = None, language: str = "EN-US"):
@@ -102,7 +124,7 @@ class MMLUEval(Eval):
                     content=format_multichoice_question(row), role="user"
                 )
             ]
-            response_text = normalize_response(sampler(prompt_messages))
+            response_text = normalize_response(sampler(p္rompt_messages))
             extracted_answer = None
             for answer_regex in MULTILINGUAL_ANSWER_REGEXES:
                 regex = MULTILINGUAL_ANSWER_PATTERN_TEMPLATE.format(answer_regex)
@@ -119,13 +141,16 @@ class MMLUEval(Eval):
                 extracted_answer=extracted_answer,
             )
             convo = prompt_messages + [dict(content=response_text, role="assistant")]
-            category = subject2category.get(row.get("sample_id", "").split("/")[0], "other")
+            category = subject2category.get(
+                row.get("sample_id", "").split("/")[0], "other"
+            )
             return SingleEvalResult(
                 html=html, score=score, metrics={category: score}, convo=convo
             )
 
         results = map_with_progress(fn, self.examples)
         return aggregate_results(results)
+
 
 if __name__ == "__main__":
     evaluator = MMLUEval(num_examples=1, language="MYA")
