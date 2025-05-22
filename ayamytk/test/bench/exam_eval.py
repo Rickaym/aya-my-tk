@@ -123,7 +123,7 @@ ANSWER_REGEX = "အဖြေ\\s*:(?:\\n{0,2})?"
 class ExamEval(Eval):
     def __init__(
         self,
-        grader_model,
+        grader_model: SamplerBase,
         num_examples: Optional[int] = None,
         language: str = "EN-US",
         filter_type=None,
