@@ -135,7 +135,7 @@ class ExamEval(Eval):
         dataset = load_dataset("Rickaym/Myanmar-G12L-Benchmark", split="test")
         examples = list(dataset)
         if filter_type:
-            examples = [r for r in examples if r["type"] == type]
+            examples = [r for r in examples if r["type"] == filter_type]
         # Sample if needed
         if num_examples and len(examples) > num_examples:
             examples = random.Random(0).sample(examples, num_examples)
@@ -152,7 +152,7 @@ class ExamEval(Eval):
         prompt_messages = [
             self.grader_model._pack_message(content=grader_prompt, role="user")
         ]
-        grade_output = self.grader_model(prompt_messages)
+        grade_output = self.grader_model(prompt_messages).response_text
 
         # Initialize empty dictionary for scores
         data = {}
