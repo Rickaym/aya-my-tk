@@ -61,6 +61,31 @@ cd aya-my-tk
 uv sync
 ```
 
+### Usage
+
+For running the evaluation, you can use the following code:
+```py
+from ayamytk.test.bench import evals
+from ayamytk.test.bench.sampler import CustomSampler
+
+def chat(messages):
+    # Add your inference code here
+    ...
+
+evals.run(samplers={"model": CustomSampler(chat=chat)}, evals="mg12l")
+```
+
+You can also run the evaluation for Cohere, OpenAI and OpenRouter supported models as well:
+
+```python
+from ayamytk.test.bench.sampler import OpenRouterSampler, ChatCompletionSampler
+
+# Assuming you have "OPENROUTER_API_KEY" in your environment variables
+evals.run(samplers={"model": OpenRouterSampler(model="deepseek/deepseek-chat")}, evals="mg12l")
+
+evals.run(samplers={"model": ChatCompletionSampler(model="gpt-4o")}, evals="mmlu_lite")
+```
+
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
