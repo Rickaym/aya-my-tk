@@ -65,6 +65,12 @@ class ChatCompletionSampler(SamplerBase):
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,
                 )
+                # Try again if choices is None
+                if not hasattr(response, "choices") or response.choices is None:
+                    print("API returned no choices; retrying")
+                    trial += 1
+                    time.sleep(2**trial)
+                    continue
                 content = response.choices[0].message.content
                 if content is None:
                     raise ValueError("OpenAI API returned empty response; retrying")
@@ -82,6 +88,9 @@ class ChatCompletionSampler(SamplerBase):
                     actual_queried_message_list=message_list,
                 )
             except Exception as e:
+                if "limit" not in str(e).lower():
+                    raise e
+
                 exception_backoff = 2**trial  # expontial back off
                 print(
                     f"Rate limit exception so wait and retry {trial} after {exception_backoff} sec",

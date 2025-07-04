@@ -126,7 +126,7 @@ class ExamEval(Eval):
         grader_model: SamplerBase,
         num_examples: Optional[int] = None,
         language: str = "EN-US",
-        filter_type=None,
+        filter_types: list[str] = None,
     ):
         if language != "MYA":
             raise ValueError(f"Language {language} not supported")
@@ -134,8 +134,8 @@ class ExamEval(Eval):
         # Load dataset and convert to list safely
         dataset = load_dataset("Rickaym/Myanmar-G12L-Benchmark", split="test")
         examples = list(dataset)
-        if filter_type:
-            examples = [r for r in examples if r["type"] == filter_type]
+        if filter_types:
+            examples = [r for r in examples if r["type"] in filter_types]
         # Sample if needed
         if num_examples and len(examples) > num_examples:
             examples = random.Random(0).sample(examples, num_examples)

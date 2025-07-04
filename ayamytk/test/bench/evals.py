@@ -122,6 +122,7 @@ def run(
                 ),
                 num_examples=1 if debug_mode else num_examples,
                 language=language,
+                filter_types=["MCQ", "FIB", "TOF"]
             )
         else:
             raise Exception(f"Unrecognized eval type: {eval_name}")
@@ -159,7 +160,7 @@ def run(
         for eval_name, eval_obj in evals.items():
             result = eval_obj(sampler)
             # ^^^ how to use a sampler
-            file_stem = f"./tmp/{eval_name}_{model_name}"
+            file_stem = f"./output/{eval_name}_{model_name}"
             os.makedirs(os.path.dirname(file_stem), exist_ok=True)
             report_filename = f"{file_stem}{debug_suffix}.html"
 
