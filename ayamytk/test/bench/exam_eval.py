@@ -127,6 +127,7 @@ class ExamEval(Eval):
         num_examples: Optional[int] = None,
         language: str = "EN-US",
         filter_types: list[str] = None,
+        num_threads: int = 50,
     ):
         if language != "MYA":
             raise ValueError(f"Language {language} not supported")
@@ -142,6 +143,7 @@ class ExamEval(Eval):
 
         self.examples = examples
         self.grader_model = grader_model
+        self.num_threads = num_threads
 
     def grade_sample(self, question: str, target: str, predicted_answer: str) -> dict:
         grader_prompt = GRADER_TEMPLATE.format(
@@ -254,5 +256,5 @@ class ExamEval(Eval):
                 html=html, score=score, metrics=metrics, convo=convo
             )
 
-        results = map_with_progress(fn, self.examples)
+        results = map_with_progress(fn, self.examples, num_threads=self.num_threads)
         return aggregate_results(results)

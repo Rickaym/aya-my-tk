@@ -106,7 +106,7 @@ def format_multichoice_question(row):
 
 
 class MMLUEval(Eval):
-    def __init__(self, num_examples: Optional[int] = None, language: str = "EN-US"):
+    def __init__(self, num_examples: Optional[int] = None, language: str = "EN-US", num_threads: int = 50):
         if language != "MYA":
             raise ValueError("Language must be MYA")
 
@@ -115,6 +115,7 @@ class MMLUEval(Eval):
         if num_examples:
             examples = random.Random(0).sample(examples, num_examples)
         self.examples = examples
+        self.num_threads = num_threads
 
     def __call__(self, sampler: SamplerBase) -> EvalResult:
         def fn(row: dict):
@@ -147,5 +148,5 @@ class MMLUEval(Eval):
                 html=html, score=score, metrics={category: score}, convo=convo
             )
 
-        results = map_with_progress(fn, self.examples)
+        results = map_with_progress(fn, self.examples, num_threads=self.num_threads)
         return aggregate_results(results)

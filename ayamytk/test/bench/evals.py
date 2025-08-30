@@ -107,13 +107,14 @@ def run(
     evals=evals_default,
     samplers=MODELS,
     language=language_default,
+    num_threads=50,
 ):
     def get_evals(eval_name, debug_mode):
         num_examples = examples if examples is not None else (5 if debug_mode else None)
         # Set num_examples = None to reproduce full evals
         if eval_name == "mmlu_lite":
             return MMLUEval(
-                num_examples=1 if debug_mode else num_examples, language=language
+                num_examples=1 if debug_mode else num_examples, language=language, num_threads=num_threads,
             )
         elif eval_name == "mg12l":
             return ExamEval(
@@ -122,7 +123,8 @@ def run(
                 ),
                 num_examples=1 if debug_mode else num_examples,
                 language=language,
-                filter_types=["MCQ", "FIB", "TOF"]
+                filter_types=["MCQ", "FIB", "TOF"],
+                num_threads=num_threads,
             )
         else:
             raise Exception(f"Unrecognized eval type: {eval_name}")
